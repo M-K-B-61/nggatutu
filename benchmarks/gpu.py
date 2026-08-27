@@ -4,10 +4,10 @@ import os
 import random
 
 
-def run_gpu_benchmark(duration=15):
+def run_gpu_benchmark(duration=20):
     """Heavy 3D rendering benchmark using pygame."""
     print("\n" + "=" * 55)
-    print("  3D RENDERING BENCHMARK - HEAVY STRESS")
+    print("  GPU BENCHMARK - EXTREME STRESS")
     print("=" * 55, flush=True)
 
     try:
@@ -16,59 +16,104 @@ def run_gpu_benchmark(duration=15):
         print("  pygame not available", flush=True)
         return {"avg_fps": 0, "min_fps": 0, "max_fps": 0, "frames": 0, "score": 0}
 
-    return _run_heavy_benchmark(pygame, duration)
+    return _run_extreme_benchmark(pygame, duration)
 
 
-def _project_point(x, y, z, cx, cy, size, cos_a, sin_a, cos_b, sin_b):
-    x2 = x * cos_a - z * sin_a
-    z2 = x * sin_a + z * cos_a
-    y2 = y * cos_b - z2 * sin_b
-    z3 = y * sin_b + z2 * cos_b
-    scale = 3 / (3 + z3)
-    return int(cx + x2 * size * scale), int(cy + y2 * size * scale), z3
+def _rotate_point(x, y, z, ax, ay, az):
+    cx = math.cos(ax)
+    sx = math.sin(ax)
+    cy = math.cos(ay)
+    sy = math.sin(ay)
+    cz = math.cos(az)
+    sz = math.sin(az)
+    y1 = y * cx - z * sx
+    z1 = y * sx + z * cx
+    x1 = x * cy + z1 * sy
+    z2 = -x * sy + z1 * cy
+    x2 = x1 * cz - y1 * sz
+    y2 = x1 * sz + y1 * cz
+    return x2, y2, z2
 
 
-def _generate_sphere(segments=12):
-    vertices = []
-    faces = []
-    for i in range(segments + 1):
-        phi = math.pi * i / segments
-        for j in range(segments):
-            theta = 2 * math.pi * j / segments
-            x = math.sin(phi) * math.cos(theta)
-            y = math.cos(phi)
-            z = math.sin(phi) * math.sin(theta)
-            vertices.append((x, y, z))
+def _project(x, y, z, w, h, fov=500):
+    if z <= 0.1:
+        z = 0.1
+    scale = fov / z
+    return int(w / 2 + x * scale), int(h / 2 + y * scale), z
 
-    for i in range(segments):
-        for j in range(segments):
-            a = i * segments + j
-            b = i * segments + (j + 1) % segments
-            c = (i + 1) * segments + (j + 1) % segments
-            d = (i + 1) * segments + j
-            faces.append((a, b, c, d))
+
+def _generate_ico_sphere(subdivisions=3):
+    t = (1 + math.sqrt(5)) / 2
+    vertices = [
+        (-1, t, 0), (1, t, 0), (-1, -t, 0), (1, -t, 0),
+        (0, -1, t), (0, 1, t), (0, -1, -t), (0, 1, -t),
+        (t, 0, -1), (t, 0, 1), (-t, 0, -1), (-t, 0, 1)
+    ]
+    faces = [
+        (0, 11, 5), (0, 5, 1), (0, 1, 7), (0, 7, 10), (0, 10, 11),
+        (1, 5, 9), (5, 11, 4), (11, 10, 2), (10, 7, 6), (7, 1, 8),
+        (3, 9, 4), (3, 4, 2), (3, 2, 6), (3, 6, 8), (3, 8, 9),
+        (4, 9, 5), (2, 4, 11), (6, 2, 10), (8, 6, 7), (9, 8, 1)
+    ]
+
+    def normalize(v):
+        l = math.sqrt(v[0] ** 2 + v[1] ** 2 + v[2] ** 2)
+        return (v[0] / l, v[1] / l, v[2] / l)
+
+    def midpoint(a, b):
+        return normalize(((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2))
+
+    for _ in range(subdivisions):
+        new_faces = []
+        mid_cache = {}
+        for i, j, k in faces:
+            a = midpoint(vertices[i], vertices[j])
+            b = midpoint(vertices[j], vertices[k])
+            c = midpoint(vertices[k], vertices[i])
+
+            def get_idx(p):
+                key = (round(p[0], 6), round(p[1], 6), round(p[2], 6))
+                if key not in mid_cache:
+                    mid_cache[key] = len(vertices)
+                    vertices.append(p)
+                return mid_cache[key]
+
+            ai, bi, ci = get_idx(a), get_idx(b), get_idx(c)
+            new_faces.extend([
+                (i, ai, ci), (j, bi, ai), (k, ci, bi), (ai, bi, ci)
+            ])
+        faces = new_faces
+
     return vertices, faces
 
 
-def _run_heavy_benchmark(pygame, duration=15):
+def _run_extreme_benchmark(pygame, duration=20):
     pygame.init()
-    W, H = 1024, 768
+    W, H = 1280, 720
     screen = pygame.display.set_mode((W, H))
-    pygame.display.set_caption("Ngga Tutu GPU Stress Test")
-    clock = pygame.time.Clock()
+    pygame.display.set_caption("Ngga Tutu GPU EXTREME STRESS")
 
-    sphere_v, sphere_f = _generate_sphere(16)
+    sphere_v, sphere_f = _generate_ico_sphere(3)
+    print(f"  Mesh: {len(sphere_v)} vertices, {len(sphere_f)} faces", flush=True)
+
     particles = []
-    for _ in range(2000):
+    for _ in range(5000):
+        angle_r = random.uniform(0, 2 * math.pi)
+        dist = random.uniform(0.5, 4)
         particles.append({
-            "x": random.uniform(-3, 3),
-            "y": random.uniform(-3, 3),
-            "z": random.uniform(-3, 3),
-            "vx": random.uniform(-0.02, 0.02),
-            "vy": random.uniform(-0.02, 0.02),
-            "vz": random.uniform(-0.02, 0.02),
-            "r": random.randint(2, 6),
-            "color": (random.randint(50, 255), random.randint(50, 255), random.randint(50, 255)),
+            "x": math.cos(angle_r) * dist,
+            "y": random.uniform(-2, 2),
+            "z": math.sin(angle_r) * dist,
+            "vx": random.uniform(-0.03, 0.03),
+            "vy": random.uniform(-0.03, 0.03),
+            "vz": random.uniform(-0.03, 0.03),
+            "size": random.uniform(1.5, 5),
+            "color": (
+                random.randint(100, 255),
+                random.randint(100, 255),
+                random.randint(100, 255)
+            ),
+            "life": random.uniform(0.5, 1.0),
         })
 
     fps_list = []
@@ -76,15 +121,9 @@ def _run_heavy_benchmark(pygame, duration=15):
     start = time.perf_counter()
     last_time = start
     angle = 0
-    frame_buffer = pygame.Surface((W, H))
 
-    total_triangles = 0
-    total_pixels = 0
-
-    print(f"  Running {duration}s heavy 3D stress...", flush=True)
-    print(f"  - {len(sphere_v)} vertices, {len(sphere_f)} faces per sphere x5", flush=True)
-    print(f"  - 2000 particles with physics", flush=True)
-    print(f"  - Software rasterization + post-processing", flush=True)
+    print(f"  Rendering {duration}s at {W}x{H}...", flush=True)
+    print(f"  {len(sphere_f)} faces x 8 objects + 5000 particles + lighting", flush=True)
 
     while time.perf_counter() - start < duration:
         for event in pygame.event.get():
@@ -92,134 +131,173 @@ def _run_heavy_benchmark(pygame, duration=15):
                 pygame.quit()
                 return {"avg_fps": 0, "min_fps": 0, "max_fps": 0, "frames": 0, "score": 0}
 
-        frame_buffer.fill((5, 5, 15))
+        screen.fill((2, 2, 8))
 
         cos_a = math.cos(math.radians(angle))
         sin_a = math.sin(math.radians(angle))
-        cos_b = math.cos(math.radians(angle * 0.6))
-        sin_b = math.sin(math.radians(angle * 0.6))
-        cos_c = math.cos(math.radians(angle * 0.3))
-        sin_c = math.sin(math.radians(angle * 0.3))
+        cos_b = math.cos(math.radians(angle * 0.4))
+        sin_b = math.sin(math.radians(angle * 0.4))
+
+        frame_tris = 0
+
+        light_x = math.sin(math.radians(angle * 0.5)) * 0.5
+        light_y = 0.7
+        light_z = math.cos(math.radians(angle * 0.5)) * 0.5
+        light_len = math.sqrt(light_x ** 2 + light_y ** 2 + light_z ** 2)
+        light_x /= light_len
+        light_y /= light_len
+        light_z /= light_len
 
         cx, cy = W // 2, H // 2
 
-        frame_triangles = 0
+        for obj_idx in range(8):
+            orb_radius = 2.0
+            orb_x = orb_radius * math.cos(math.radians(angle * 0.15 + obj_idx * 45))
+            orb_y = orb_radius * math.sin(math.radians(angle * 0.2 + obj_idx * 30))
+            orb_z = 3 + 2 * math.sin(math.radians(angle * 0.1 + obj_idx * 60))
 
-        for obj_idx in range(5):
-            obj_x = 1.8 * math.cos(math.radians(angle * 0.2 + obj_idx * 72))
-            obj_y = 1.2 * math.sin(math.radians(angle * 0.15 + obj_idx * 72))
-            obj_z = math.sin(math.radians(angle * 0.1 + obj_idx * 36))
-            scale = 120 + 30 * math.sin(angle * 0.02 + obj_idx)
+            obj_scale = 80 + 20 * math.sin(angle * 0.03 + obj_idx)
+            base_r = int(127 + 127 * math.sin(obj_idx * 1.1))
+            base_g = int(127 + 127 * math.sin(obj_idx * 1.1 + 2.1))
+            base_b = int(127 + 127 * math.sin(obj_idx * 1.1 + 4.2))
 
-            r = int(200 + 55 * math.sin(obj_idx * 1.2))
-            g = int(200 + 55 * math.sin(obj_idx * 1.2 + 2))
-            b = int(200 + 55 * math.sin(obj_idx * 1.2 + 4))
-
-            transformed = []
+            rotated = []
+            normals = []
             for vx, vy, vz in sphere_v:
-                px, py, pz = _project_point(
-                    vx * scale + obj_x * 100, vy * scale + obj_y * 100, vz * scale + obj_z * 100,
-                    cx, cy, 1.0, cos_a, sin_a, cos_b, sin_b
-                )
-                transformed.append((px, py, pz))
+                rx, ry, rz = _rotate_point(vx, vy, vz,
+                    math.radians(angle * 0.5),
+                    math.radians(angle * 0.3 + obj_idx * 45),
+                    math.radians(angle * 0.2))
+                px, py, pz = _project(rx * obj_scale + orb_x * 100, ry * obj_scale + orb_y * 100, rz + orb_z * 100, W, H)
+                rotated.append((px, py, pz))
+                normals.append((rx, ry, rz))
 
             for face in sphere_f:
-                pts = [transformed[i] for i in face]
-                min_z = min(p[2] for p in pts)
-                if min_z > -10:
-                    depth = max(0, min(1, (min_z + 3) / 6))
-                    fr = max(0, min(255, int(r * depth)))
-                    fg = max(0, min(255, int(g * depth)))
-                    fb = max(0, min(255, int(b * depth)))
-                    try:
-                        pygame.draw.polygon(frame_buffer, (fr, fg, fb),
-                                           [(p[0], p[1]) for p in pts])
-                        pygame.draw.polygon(frame_buffer, (fr // 2, fg // 2, fb // 2),
-                                           [(p[0], p[1]) for p in pts], 1)
-                    except Exception:
-                        pass
-                    frame_triangles += 1
+                pts = [rotated[i] for i in face]
+                ns = [normals[i] for i in face]
+
+                avg_z = sum(p[2] for p in pts) / 3
+                if avg_z < 1:
+                    continue
+
+                nx = sum(n[0] for n in ns) / 3
+                ny = sum(n[1] for n in ns) / 3
+                nz = sum(n[2] for n in ns) / 3
+                nl = math.sqrt(nx * nx + ny * ny + nz * nz)
+                if nl > 0:
+                    nx /= nl
+                    ny /= nl
+                    nz /= nl
+
+                dot = max(0, nx * light_x + ny * light_y + nz * light_z)
+                ambient = 0.15
+                diffuse = dot * 0.7
+                specular = 0
+                if dot > 0:
+                    rz2 = 2 * dot * nz - light_z
+                    specular = max(0, rz2) ** 16 * 0.5
+
+                intensity = ambient + diffuse + specular
+                fr = max(0, min(255, int(base_r * intensity)))
+                fg = max(0, min(255, int(base_g * intensity)))
+                fb = max(0, min(255, int(base_b * intensity)))
+
+                try:
+                    pygame.draw.polygon(screen, (fr, fg, fb), [(p[0], p[1]) for p in pts])
+                    pygame.draw.polygon(screen, (fr // 3, fg // 3, fb // 3), [(p[0], p[1]) for p in pts], 1)
+                except Exception:
+                    pass
+                frame_tris += 1
 
         for p in particles:
             p["x"] += p["vx"]
             p["y"] += p["vy"]
             p["z"] += p["vz"]
-
-            if abs(p["x"]) > 3:
-                p["vx"] *= -1
-            if abs(p["y"]) > 3:
-                p["vy"] *= -1
-            if abs(p["z"]) > 3:
-                p["vz"] *= -1
-
-            px, py, pz = _project_point(
-                p["x"] * 80, p["y"] * 80, p["z"] * 80,
-                cx, cy, 0.5, cos_a, sin_a, cos_b, sin_b
-            )
-
+            dist = math.sqrt(p["x"] ** 2 + p["y"] ** 2 + p["z"] ** 2)
+            if dist > 4:
+                p["vx"] -= p["x"] * 0.001
+                p["vy"] -= p["y"] * 0.001
+                p["vz"] -= p["z"] * 0.001
+            px, py, pz = _project(p["x"] * 100, p["y"] * 100, p["z"] * 100 + 200, W, H)
             if 0 <= px < W and 0 <= py < H:
-                brightness = max(0.3, min(1.0, (pz + 3) / 6))
-                cr = max(0, min(255, int(p["color"][0] * brightness)))
-                cg = max(0, min(255, int(p["color"][1] * brightness)))
-                cb = max(0, min(255, int(p["color"][2] * brightness)))
-                r_size = max(1, int(p["r"] * brightness))
-                pygame.draw.circle(frame_buffer, (cr, cg, cb), (px, py), r_size)
+                brightness = max(0.2, min(1.0, pz / 400))
+                cr = max(0, min(255, int(p["color"][0] * brightness * p["life"])))
+                cg = max(0, min(255, int(p["color"][1] * brightness * p["life"])))
+                cb = max(0, min(255, int(p["color"][2] * brightness * p["life"])))
+                r_size = max(1, int(p["size"] * brightness))
+                pygame.draw.circle(screen, (cr, cg, cb), (px, py), r_size)
 
-        post_surface = pygame.Surface((W // 2, H // 2))
-        pygame.transform.smoothscale(frame_buffer, (W // 2, H // 2), post_surface)
-        pygame.transform.scale(post_surface, (W, H), frame_buffer)
+        for ring in range(3):
+            ring_radius = 150 + ring * 80
+            ring_points = 60
+            ring_color = (
+                int(50 + 30 * math.sin(angle * 0.02 + ring)),
+                int(80 + 40 * math.cos(angle * 0.02 + ring)),
+                int(120 + 50 * math.sin(angle * 0.03 + ring))
+            )
+            for i in range(ring_points):
+                a1 = math.radians(angle * (0.3 + ring * 0.1) + i * (360 / ring_points))
+                a2 = math.radians(angle * (0.3 + ring * 0.1) + (i + 1) * (360 / ring_points))
+                x1 = cx + int(ring_radius * math.cos(a1))
+                y1 = cy + int(ring_radius * math.sin(a1) * 0.4)
+                x2 = cx + int(ring_radius * math.cos(a2))
+                y2 = cy + int(ring_radius * math.sin(a2) * 0.4)
+                pygame.draw.line(screen, ring_color, (x1, y1), (x2, y2), 2)
 
-        for stripe_y in range(0, H, 4):
-            alpha = int(30 + 20 * math.sin(angle * 0.05 + stripe_y * 0.02))
-            stripe_color = (alpha, alpha, alpha + 20)
-            pygame.draw.line(frame_buffer, stripe_color, (0, stripe_y), (W, stripe_y))
+        for i in range(200):
+            sx = random.randint(0, W - 1)
+            sy = random.randint(0, H - 1)
+            screen.set_at((sx, sy), (random.randint(150, 255), random.randint(150, 255), random.randint(150, 255)))
+
+        for line_y in range(0, H, 3):
+            alpha = int(15 + 10 * math.sin(angle * 0.1 + line_y * 0.05))
+            pygame.draw.line(screen, (alpha, alpha, alpha + 10), (0, line_y), (W, line_y))
 
         now = time.perf_counter()
         if now - last_time > 0:
             fps_list.append(1.0 / (now - last_time))
         last_time = now
 
-        font = pygame.font.SysFont("consolas", 20, bold=True)
+        font = pygame.font.SysFont("consolas", 18, bold=True)
         fps_val = fps_list[-1] if fps_list else 0
 
-        texts = [
-            f"FPS: {fps_val:.0f}",
+        hud = [
+            f"FPS: {fps_val:.1f}",
             f"Frame: {frame_count}",
-            f"Triangles: {frame_triangles}",
-            f"Particles: {len(particles)}",
+            f"Triangles: {frame_tris}",
+            f"Objects: 8 spheres + 5000 particles",
             f"Resolution: {W}x{H}",
+            f"Elapsed: {time.perf_counter() - start:.1f}s / {duration}s",
         ]
 
-        y = 10
-        for txt in texts:
+        y = 8
+        for txt in hud:
             surf = font.render(txt, True, (0, 255, 0))
-            bg = pygame.Surface((surf.get_width() + 8, surf.get_height() + 2))
+            bg = pygame.Surface((surf.get_width() + 6, surf.get_height() + 2))
             bg.fill((0, 0, 0))
-            bg.set_alpha(150)
-            frame_buffer.blit(bg, (8, y - 2))
-            frame_buffer.blit(surf, (12, y))
-            y += 24
+            bg.set_alpha(180)
+            screen.blit(bg, (6, y - 1))
+            screen.blit(surf, (10, y))
+            y += 22
 
-        screen.blit(frame_buffer, (0, 0))
         pygame.display.flip()
         frame_count += 1
-        total_triangles += frame_triangles
-        angle += 1.5
-        clock.tick(0)
+        angle += 1.2
 
     pygame.quit()
 
     avg_fps = sum(fps_list) / len(fps_list) if fps_list else 0
     min_fps = min(fps_list) if fps_list else 0
     max_fps = max(fps_list) if fps_list else 0
-    score = avg_fps * 5 + total_triangles / max(frame_count, 1) * 0.5
+    total_tris = frame_tris
+    score = avg_fps * 3 + total_tris / max(frame_count, 1) * 0.1
 
     print(f"  Average FPS:     {avg_fps:.1f}", flush=True)
     print(f"  Min FPS:         {min_fps:.1f}", flush=True)
     print(f"  Max FPS:         {max_fps:.1f}", flush=True)
     print(f"  Total Frames:    {frame_count}", flush=True)
-    print(f"  Total Triangles: {total_triangles}", flush=True)
-    print(f"  Triangles/Frame: {total_triangles // max(frame_count, 1)}", flush=True)
+    print(f"  Total Triangles: {total_tris}", flush=True)
+    print(f"  Triangles/Frame: {total_tris // max(frame_count, 1)}", flush=True)
     print("\n" + "-" * 55)
     print(f"  GPU SCORE: {score:.0f}")
     print("-" * 55, flush=True)
@@ -229,6 +307,6 @@ def _run_heavy_benchmark(pygame, duration=15):
         "min_fps": min_fps,
         "max_fps": max_fps,
         "frames": frame_count,
-        "total_triangles": total_triangles,
+        "total_triangles": total_tris,
         "score": score,
     }
