@@ -1,55 +1,47 @@
 # Ngga Tutu
 
-Cross-platform system benchmark tool for Windows and Linux. Open source, lightweight, and easy to use.
+Real performance benchmark tool. Stresses your PC and gives a score.
 
 ## Features
 
-- **CPU Benchmark** - Single-core and multi-core performance testing
-- **Memory Benchmark** - Read/write speed and random access tests
-- **Disk I/O Benchmark** - Sequential and random read/write performance
-- **JSON Export** - Save results for comparison
+- **CPU** - Prime sieve, matrix multiply, SHA256, compression, multi-core stress
+- **Memory** - Sequential/random read/write, copy speed, latency
+- **Disk** - Sequential/random 4K, mixed workload
+- **GPU** - 3D rendering with FPS counter
+- **GUI** - Dark theme with animated score gauge and bar charts
 
 ## Requirements
 
 - Python 3.8+
-- No external dependencies
+- PySide6 (`pip install PySide6`)
+- pygame (`pip install pygame`)
+- numpy (`pip install numpy`)
 
 ## Installation
 
 ```bash
 git clone https://github.com/M-K-B-61/nggatutu.git
 cd nggatutu
+pip install PySide6 pygame numpy
 ```
 
 ## Usage
 
 ```bash
-# Run all benchmarks
-python main.py quick
+# Launch GUI
+python main.py
 
-# Run specific benchmark
+# CLI mode
+python main.py cli
+
+# Individual tests
 python main.py cpu
 python main.py memory
 python main.py disk
+python main.py gpu
 
-# Show system info
+# System info
 python main.py info
-```
-
-## Example Output
-
-```
-==================================================
-  CPU BENCHMARK
-==================================================
-
-[1/3] Single Core Integer... 28.05 MOPS
-[2/3] Single Core Float...   19.83 MOPS
-[3/3] Multi Core...          14.84 MOPS
-
---------------------------------------------------
-  CPU SCORE: 20.91
---------------------------------------------------
 ```
 
 ## License

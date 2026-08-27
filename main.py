@@ -1,36 +1,38 @@
 #!/usr/bin/env python3
-"""Ngga Tutu - Cross Platform Benchmark Tool"""
+"""Ngga Tutu - Real Benchmark Tool"""
 
 import sys
 import platform
 import json
 import os
+import math
 from datetime import datetime
 
 from benchmarks.cpu import run_cpu_benchmark
 from benchmarks.memory import run_memory_benchmark
 from benchmarks.disk import run_disk_benchmark
+from benchmarks.gpu import run_gpu_benchmark
 
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 
 BANNER = f"""
-+-----------------------------------------------+
-|              Ngga Tutu Benchmark              |
-|            v{VERSION} - Cross Platform            |
-+-----------------------------------------------+
++-------------------------------------------------------+
+|                   Ngga Tutu Benchmark                 |
+|                 v{VERSION} - Real Performance Test           |
++-------------------------------------------------------+
 """
 
 
 def print_usage():
     print("Usage: python main.py <command>\n", flush=True)
     print("Commands:", flush=True)
-    print("  (none)    Launch GUI interface", flush=True)
-    print("  cli       Run in CLI mode", flush=True)
-    print("  cpu       Run CPU benchmark (CLI)", flush=True)
-    print("  memory    Run memory benchmark (CLI)", flush=True)
-    print("  disk      Run disk I/O benchmark (CLI)", flush=True)
-    print("  quick     Run all benchmarks (CLI)", flush=True)
-    print("  info      Show system information (CLI)", flush=True)
+    print("  (none)    Launch GUI", flush=True)
+    print("  cli       Run all benchmarks (CLI)", flush=True)
+    print("  cpu       CPU benchmark only", flush=True)
+    print("  memory    Memory benchmark only", flush=True)
+    print("  disk      Disk benchmark only", flush=True)
+    print("  gpu       3D rendering benchmark", flush=True)
+    print("  info      System information", flush=True)
     print("  version   Show version", flush=True)
     print("  help      Show this help", flush=True)
 
@@ -38,7 +40,7 @@ def print_usage():
 def print_system_info():
     print(BANNER, flush=True)
     print("System Information", flush=True)
-    print("=" * 50, flush=True)
+    print("=" * 55, flush=True)
     print(f"  OS:         {platform.system()} {platform.release()}", flush=True)
     print(f"  Arch:       {platform.machine()}", flush=True)
     print(f"  Python:     {platform.python_version()}", flush=True)
@@ -47,9 +49,9 @@ def print_system_info():
     print(flush=True)
 
 
-def run_quick_benchmark():
+def run_all_cli():
     print(BANNER)
-    print("Running all benchmarks...\n")
+    print("Running full benchmark suite...\n")
 
     results = {
         "timestamp": datetime.now().isoformat(),
@@ -63,15 +65,24 @@ def run_quick_benchmark():
     results["cpu"] = run_cpu_benchmark()
     results["memory"] = run_memory_benchmark()
     results["disk"] = run_disk_benchmark()
+    results["gpu"] = run_gpu_benchmark(10)
 
-    print("\n" + "=" * 50)
+    cpu_s = results["cpu"]["final_score"]
+    mem_s = results["memory"]["final_score"]
+    disk_s = results["disk"]["final_score"]
+    gpu_s = results["gpu"]["score"]
+    total = (cpu_s + mem_s + disk_s + gpu_s) / 4
+
+    print("\n" + "=" * 55)
     print("  FINAL RESULTS")
-    print("=" * 50)
-    print(f"  CPU Score:      {results['cpu']['final_score']:.2f}")
-    print(f"  Memory:         {results['memory']['avg_bandwidth']:.2f} MB/s")
-    print(f"  Disk Seq:       R {results['disk']['seq_read']:.2f} / W {results['disk']['seq_write']:.2f} MB/s")
-    print(f"  Disk Rand:      R {results['disk']['rand_read']:.2f} / W {results['disk']['rand_write']:.2f} MB/s")
-    print("=" * 50)
+    print("=" * 55)
+    print(f"  CPU:      {cpu_s:.0f}")
+    print(f"  Memory:   {mem_s:.0f}")
+    print(f"  Disk:     {disk_s:.0f}")
+    print(f"  GPU:      {gpu_s:.0f}")
+    print("-" * 55)
+    print(f"  TOTAL:    {total:.0f}")
+    print("=" * 55)
 
     filename = f"benchmark_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
     with open(filename, "w") as f:
@@ -83,126 +94,226 @@ def run_quick_benchmark():
 def launch_gui():
     from PySide6.QtWidgets import (
         QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-        QLabel, QPushButton, QTabWidget, QFrame, QProgressBar, QTextEdit
+        QLabel, QPushButton, QTabWidget, QTextEdit
     )
-    from PySide6.QtCore import Qt, QThread, Signal
+    from PySide6.QtCore import Qt, QThread, Signal, QTimer
+    from PySide6.QtGui import QFont, QColor, QPainter, QPen, QBrush
 
     class BenchmarkWorker(QThread):
         progress = Signal(str)
-        finished = Signal(dict)
+        result_ready = Signal(str, dict)
 
         def __init__(self, benchmark_type):
             super().__init__()
             self.benchmark_type = benchmark_type
 
         def run(self):
-            results = {}
             try:
-                if self.benchmark_type in ("cpu", "all"):
-                    self.progress.emit("Running CPU benchmark...")
+                if self.benchmark_type == "cpu":
+                    self.progress.emit("Running CPU stress test...")
+                    result = run_cpu_benchmark()
+                    self.result_ready.emit("cpu", result)
+                elif self.benchmark_type == "memory":
+                    self.progress.emit("Running Memory stress test...")
+                    result = run_memory_benchmark()
+                    self.result_ready.emit("memory", result)
+                elif self.benchmark_type == "disk":
+                    self.progress.emit("Running Disk stress test...")
+                    result = run_disk_benchmark()
+                    self.result_ready.emit("disk", result)
+                elif self.benchmark_type == "gpu":
+                    self.progress.emit("Running 3D rendering test...")
+                    result = run_gpu_benchmark(10)
+                    self.result_ready.emit("gpu", result)
+                elif self.benchmark_type == "all":
+                    results = {}
+                    self.progress.emit("Running CPU stress test...")
                     results["cpu"] = run_cpu_benchmark()
-
-                if self.benchmark_type in ("memory", "all"):
-                    self.progress.emit("Running Memory benchmark...")
+                    self.progress.emit("Running Memory stress test...")
                     results["memory"] = run_memory_benchmark()
-
-                if self.benchmark_type in ("disk", "all"):
-                    self.progress.emit("Running Disk benchmark...")
+                    self.progress.emit("Running Disk stress test...")
                     results["disk"] = run_disk_benchmark()
-
+                    self.progress.emit("Running 3D rendering test...")
+                    results["gpu"] = run_gpu_benchmark(10)
+                    self.result_ready.emit("all", results)
             except Exception as e:
                 self.progress.emit(f"Error: {e}")
 
-            self.finished.emit(results)
+    class ScoreGauge(QWidget):
+        def __init__(self, parent=None):
+            super().__init__(parent)
+            self.score = 0
+            self.target_score = 0
+            self.label = "SCORE"
+            self.setFixedSize(200, 200)
+
+        def set_score(self, score, label="SCORE"):
+            self.target_score = score
+            self.label = label
+            self.score = 0
+            self.timer = QTimer()
+            self.timer.timeout.connect(self.update_score)
+            self.timer.start(16)
+
+        def update_score(self):
+            if self.score < self.target_score:
+                self.score += max(1, (self.target_score - self.score) * 0.1)
+                if abs(self.score - self.target_score) < 1:
+                    self.score = self.target_score
+                    self.timer.stop()
+            self.update()
+
+        def paintEvent(self, event):
+            painter = QPainter(self)
+            painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+            center = self.rect().center()
+            radius = 80
+
+            pen = QPen(QColor(50, 50, 50), 12, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
+            painter.setPen(pen)
+            painter.drawArc(center.x() - radius, center.y() - radius, radius * 2, radius * 2, 225 * 16, -270 * 16)
+
+            score_angle = int(-270 * (min(self.score, 1000) / 1000))
+            if self.score > 700:
+                color = QColor(0, 200, 100)
+            elif self.score > 400:
+                color = QColor(255, 200, 0)
+            else:
+                color = QColor(255, 80, 80)
+
+            pen = QPen(color, 12, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
+            painter.setPen(pen)
+            painter.drawArc(center.x() - radius, center.y() - radius, radius * 2, radius * 2, 225 * 16, score_angle * 16)
+
+            painter.setPen(QColor(255, 255, 255))
+            font = QFont("Segoe UI", 32, QFont.Weight.Bold)
+            painter.setFont(font)
+            painter.drawText(self.rect().adjusted(0, -10, 0, 0), Qt.AlignmentFlag.AlignCenter, str(int(self.score)))
+
+            font = QFont("Segoe UI", 10)
+            painter.setFont(font)
+            painter.setPen(QColor(150, 150, 150))
+            painter.drawText(self.rect().adjusted(0, 40, 0, 0), Qt.AlignmentFlag.AlignCenter, self.label)
+
+    class BarChart(QWidget):
+        def __init__(self, parent=None):
+            super().__init__(parent)
+            self.data = {}
+            self.max_val = 1000
+            self.setFixedHeight(150)
+
+        def set_data(self, data, max_val=1000):
+            self.data = data
+            self.max_val = max_val
+            self.update()
+
+        def paintEvent(self, event):
+            if not self.data:
+                return
+            painter = QPainter(self)
+            painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+            bar_width = 40
+            gap = 20
+            n = len(self.data)
+            total_width = n * bar_width + (n - 1) * gap
+            start_x = (self.width() - total_width) // 2
+            colors = [QColor(74, 158, 255), QColor(0, 200, 100), QColor(255, 180, 0), QColor(255, 80, 80)]
+
+            for i, (label, value) in enumerate(self.data.items()):
+                x = start_x + i * (bar_width + gap)
+                bar_height = int((value / self.max_val) * 100)
+                y = self.height() - 30 - bar_height
+                painter.setBrush(QBrush(colors[i % len(colors)]))
+                painter.setPen(Qt.PenStyle.NoPen)
+                painter.drawRoundedRect(x, y, bar_width, bar_height, 4, 4)
+                painter.setPen(QColor(200, 200, 200))
+                painter.setFont(QFont("Segoe UI", 8))
+                painter.drawText(x, self.height() - 15, bar_width, 15, Qt.AlignmentFlag.AlignCenter, label)
+                painter.setPen(QColor(255, 255, 255))
+                painter.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
+                painter.drawText(x, y - 20, bar_width, 15, Qt.AlignmentFlag.AlignCenter, str(int(value)))
 
     class BenchmarkTab(QWidget):
-        def __init__(self, name, benchmark_func, parent=None):
+        def __init__(self, name, icon, parent=None):
             super().__init__(parent)
             self.name = name
-            self.benchmark_func = benchmark_func
+            self.icon = icon
             self.setup_ui()
 
         def setup_ui(self):
             layout = QVBoxLayout(self)
-            layout.setSpacing(20)
+            layout.setSpacing(15)
+            header = QHBoxLayout()
+            icon_label = QLabel(self.icon)
+            icon_label.setStyleSheet("font-size: 24px;")
+            header.addWidget(icon_label)
+            title = QLabel(self.name)
+            title.setStyleSheet("color: #fff; font-size: 22px; font-weight: bold;")
+            header.addWidget(title)
+            header.addStretch()
+            layout.addLayout(header)
 
-            header = QLabel(self.name)
-            header.setStyleSheet("color: #fff; font-size: 20px; font-weight: bold;")
-            layout.addWidget(header)
-
-            self.run_btn = QPushButton(f"Run {self.name}")
-            self.run_btn.setFixedHeight(45)
+            self.run_btn = QPushButton(f"Run {self.name} Test")
+            self.run_btn.setFixedHeight(50)
             self.run_btn.setStyleSheet("""
                 QPushButton {
-                    background-color: #4a9eff;
-                    color: white;
-                    border: none;
-                    border-radius: 8px;
-                    font-size: 14px;
-                    font-weight: bold;
+                    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                        stop:0 #4a9eff, stop:1 #6c5ce7);
+                    color: white; border: none; border-radius: 10px;
+                    font-size: 15px; font-weight: bold;
                 }
-                QPushButton:hover { background-color: #3a8eef; }
-                QPushButton:pressed { background-color: #2a7edf; }
-                QPushButton:disabled { background-color: #555; color: #888; }
+                QPushButton:hover {
+                    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                        stop:0 #3a8eef, stop:1 #5c4ce7);
+                }
+                QPushButton:disabled { background-color: #444; color: #888; }
             """)
-            self.run_btn.clicked.connect(self.run_benchmark)
+            self.run_btn.clicked.connect(self.run_test)
             layout.addWidget(self.run_btn)
-
-            self.progress = QProgressBar()
-            self.progress.setRange(0, 0)
-            self.progress.setVisible(False)
-            self.progress.setStyleSheet("""
-                QProgressBar {
-                    border: none; border-radius: 5px;
-                    background-color: #333; height: 8px;
-                }
-                QProgressBar::chunk {
-                    background-color: #4a9eff; border-radius: 5px;
-                }
-            """)
-            layout.addWidget(self.progress)
 
             self.output = QTextEdit()
             self.output.setReadOnly(True)
             self.output.setMaximumHeight(200)
             self.output.setStyleSheet("""
                 QTextEdit {
-                    background-color: #1a1a1a; color: #0f0;
-                    border: 1px solid #333; border-radius: 8px;
-                    padding: 10px; font-family: Consolas, monospace; font-size: 12px;
+                    background-color: #0d1117; color: #0f0;
+                    border: 1px solid #30363d; border-radius: 10px;
+                    padding: 12px; font-family: 'Cascadia Code', Consolas, monospace;
+                    font-size: 12px;
                 }
             """)
             layout.addWidget(self.output)
             layout.addStretch()
 
-        def run_benchmark(self):
+        def run_test(self):
             self.run_btn.setEnabled(False)
-            self.progress.setVisible(True)
             self.output.clear()
             self.worker = BenchmarkWorker(self.name.lower())
-            self.worker.progress.connect(lambda msg: self.output.append(msg))
-            self.worker.finished.connect(self.on_finished)
+            self.worker.progress.connect(lambda msg: self.output.append(f"> {msg}"))
+            self.worker.result_ready.connect(self.on_result)
             self.worker.start()
 
-        def on_finished(self, results):
+        def on_result(self, bench_type, result):
             self.run_btn.setEnabled(True)
-            self.progress.setVisible(False)
-            if self.name.lower() in results:
-                data = results[self.name.lower()]
-                self.output.append("\n" + "=" * 40)
-                self.output.append(f"  {self.name} RESULTS")
-                self.output.append("=" * 40)
-                for key, value in data.items():
-                    if isinstance(value, float):
-                        self.output.append(f"  {key}: {value:.2f}")
-                    else:
-                        self.output.append(f"  {key}: {value}")
+            self.output.append("\n" + "=" * 45)
+            self.output.append(f"  {self.name} RESULTS")
+            self.output.append("=" * 45)
+            if "scores" in result:
+                for k, v in result["scores"].items():
+                    self.output.append(f"  {k}: {v:.0f}")
+                self.output.append(f"\n  FINAL: {result['final_score']:.0f}")
+            elif "avg_fps" in result:
+                self.output.append(f"  Avg FPS: {result['avg_fps']:.1f}")
+                self.output.append(f"  Min FPS: {result['min_fps']:.1f}")
+                self.output.append(f"  Max FPS: {result['max_fps']:.1f}")
+                self.output.append(f"\n  SCORE: {result['score']:.0f}")
 
     class MainWindow(QMainWindow):
         def __init__(self):
             super().__init__()
             self.setWindowTitle("Ngga Tutu Benchmark")
-            self.setMinimumSize(800, 600)
+            self.setMinimumSize(900, 650)
+            self.results = {}
             self.setup_ui()
 
         def setup_ui(self):
@@ -210,119 +321,142 @@ def launch_gui():
             self.setCentralWidget(central)
             main_layout = QVBoxLayout(central)
             main_layout.setContentsMargins(0, 0, 0, 0)
+            main_layout.setSpacing(0)
 
             header = QWidget()
-            header.setFixedHeight(80)
-            header.setStyleSheet("background-color: #1a1a1a;")
+            header.setFixedHeight(90)
+            header.setStyleSheet("QWidget { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0d1117, stop:1 #161b22); }")
             header_layout = QHBoxLayout(header)
-            header_layout.setContentsMargins(20, 0, 20, 0)
-
+            header_layout.setContentsMargins(25, 0, 25, 0)
             title = QLabel("Ngga Tutu")
-            title.setStyleSheet("color: #4a9eff; font-size: 24px; font-weight: bold;")
+            title.setStyleSheet("color: #58a6ff; font-size: 28px; font-weight: bold; background: transparent;")
             header_layout.addWidget(title)
-
-            subtitle = QLabel("Cross-Platform Benchmark")
-            subtitle.setStyleSheet("color: #666; font-size: 14px;")
+            subtitle = QLabel("Real Performance Benchmark")
+            subtitle.setStyleSheet("color: #8b949e; font-size: 14px; background: transparent;")
             header_layout.addWidget(subtitle)
             header_layout.addStretch()
-
-            self.run_all_btn = QPushButton("Run All")
-            self.run_all_btn.setFixedSize(120, 40)
+            self.run_all_btn = QPushButton("RUN ALL TESTS")
+            self.run_all_btn.setFixedSize(160, 45)
             self.run_all_btn.setStyleSheet("""
                 QPushButton {
-                    background-color: #28a745; color: white; border: none;
-                    border-radius: 8px; font-size: 14px; font-weight: bold;
+                    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                        stop:0 #238636, stop:1 #2ea043);
+                    color: white; border: none; border-radius: 10px;
+                    font-size: 14px; font-weight: bold;
                 }
-                QPushButton:hover { background-color: #218838; }
-                QPushButton:disabled { background-color: #555; }
+                QPushButton:hover {
+                    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                        stop:0 #2ea043, stop:1 #3fb950);
+                }
+                QPushButton:disabled { background-color: #444; }
             """)
             self.run_all_btn.clicked.connect(self.run_all)
             header_layout.addWidget(self.run_all_btn)
             main_layout.addWidget(header)
 
+            content = QWidget()
+            content.setStyleSheet("background-color: #0d1117;")
+            content_layout = QHBoxLayout(content)
+            content_layout.setContentsMargins(20, 20, 20, 20)
+
+            left_panel = QWidget()
+            left_layout = QVBoxLayout(left_panel)
+            left_layout.setContentsMargins(0, 0, 0, 0)
             self.tabs = QTabWidget()
             self.tabs.setStyleSheet("""
-                QTabWidget::pane { border: none; background-color: #1e1e1e; }
+                QTabWidget::pane { border: none; background: #0d1117; }
                 QTabBar::tab {
-                    background-color: #2d2d2d; color: #888;
-                    padding: 12px 24px; margin-right: 2px;
+                    background: #161b22; color: #8b949e;
+                    padding: 12px 20px; margin-right: 2px;
                     border-top-left-radius: 8px; border-top-right-radius: 8px;
+                    font-size: 13px;
                 }
-                QTabBar::tab:selected { background-color: #1e1e1e; color: #4a9eff; }
-                QTabBar::tab:hover { background-color: #3d3d3d; }
+                QTabBar::tab:selected { background: #0d1117; color: #58a6ff; }
+                QTabBar::tab:hover { background: #21262d; }
             """)
-
-            self.cpu_tab = BenchmarkTab("CPU", run_cpu_benchmark)
-            self.mem_tab = BenchmarkTab("Memory", run_memory_benchmark)
-            self.disk_tab = BenchmarkTab("Disk", run_disk_benchmark)
-
+            self.cpu_tab = BenchmarkTab("CPU", "CPU")
+            self.mem_tab = BenchmarkTab("Memory", "RAM")
+            self.disk_tab = BenchmarkTab("Disk", "SSD")
+            self.gpu_tab = BenchmarkTab("GPU", "3D")
             self.tabs.addTab(self.cpu_tab, "CPU")
             self.tabs.addTab(self.mem_tab, "Memory")
             self.tabs.addTab(self.disk_tab, "Disk")
-            main_layout.addWidget(self.tabs)
+            self.tabs.addTab(self.gpu_tab, "GPU")
+            left_layout.addWidget(self.tabs)
+            content_layout.addWidget(left_panel, 2)
 
+            right_panel = QWidget()
+            right_layout = QVBoxLayout(right_panel)
+            right_layout.setContentsMargins(0, 0, 0, 0)
+            right_layout.setSpacing(15)
+            result_title = QLabel("Results")
+            result_title.setStyleSheet("color: #fff; font-size: 18px; font-weight: bold;")
+            right_layout.addWidget(result_title)
+            self.gauge = ScoreGauge()
+            right_layout.addWidget(self.gauge, alignment=Qt.AlignmentFlag.AlignHCenter)
+            self.chart = BarChart()
+            right_layout.addWidget(self.chart)
+            self.total_label = QLabel("TOTAL SCORE: --")
+            self.total_label.setStyleSheet("color: #58a6ff; font-size: 16px; font-weight: bold; padding: 10px; background: #161b22; border-radius: 8px;")
+            self.total_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            right_layout.addWidget(self.total_label)
+            right_layout.addStretch()
+            content_layout.addWidget(right_panel, 1)
+
+            main_layout.addWidget(content)
             self.status_bar = QLabel("Ready")
-            self.status_bar.setFixedHeight(30)
-            self.status_bar.setStyleSheet("color: #666; padding: 5px 10px; background-color: #1a1a1a;")
+            self.status_bar.setFixedHeight(35)
+            self.status_bar.setStyleSheet("color: #8b949e; padding: 8px 15px; background: #161b22;")
             main_layout.addWidget(self.status_bar)
 
         def run_all(self):
             self.run_all_btn.setEnabled(False)
-            self.cpu_tab.run_benchmark()
-            self.mem_tab.run_benchmark()
-            self.disk_tab.run_benchmark()
+            self.status_bar.setText("Running all benchmarks...")
+            self.worker = BenchmarkWorker("all")
+            self.worker.progress.connect(lambda msg: self.status_bar.setText(msg))
+            self.worker.result_ready.connect(self.on_all_done)
+            self.worker.start()
+
+        def on_all_done(self, _, results):
             self.run_all_btn.setEnabled(True)
+            self.results = results
+            self.status_bar.setText("Benchmark complete!")
+            chart_data = {}
+            total = 0
+            for key in ["cpu", "memory", "disk", "gpu"]:
+                if key in results:
+                    val = results[key].get("final_score", results[key].get("score", 0))
+                    chart_data[key.upper()] = val
+                    total += val
+            avg = total / max(len(chart_data), 1)
+            self.gauge.set_score(avg, "TOTAL")
+            self.chart.set_data(chart_data, max(max(chart_data.values()) * 1.2, 100))
+            self.total_label.setText(f"TOTAL SCORE: {avg:.0f}")
 
     app = QApplication(sys.argv)
-    app.setStyleSheet("""
-        QMainWindow { background-color: #1e1e1e; }
-        QWidget { background-color: #1e1e1e; color: #fff; }
-    """)
+    app.setStyleSheet("QMainWindow, QWidget { background-color: #0d1117; color: #fff; }")
     window = MainWindow()
     window.show()
     sys.exit(app.exec())
-
-
-def cli_mode():
-    if len(sys.argv) < 3:
-        print("Usage: python main.py cli <command>", flush=True)
-        print("Commands: cpu, memory, disk, quick, info", flush=True)
-        return
-
-    cmd = sys.argv[2].lower()
-    if cmd == "cpu":
-        run_cpu_benchmark()
-    elif cmd == "memory":
-        run_memory_benchmark()
-    elif cmd == "disk":
-        run_disk_benchmark()
-    elif cmd == "quick":
-        run_quick_benchmark()
-    elif cmd == "info":
-        print_system_info()
-    else:
-        print(f"Unknown command: {cmd}", flush=True)
 
 
 def main():
     if len(sys.argv) < 2:
         launch_gui()
         return
-
     cmd = sys.argv[1].lower()
-
     if cmd == "gui":
         launch_gui()
     elif cmd == "cli":
-        cli_mode()
+        run_all_cli()
     elif cmd == "cpu":
         run_cpu_benchmark()
     elif cmd == "memory":
         run_memory_benchmark()
     elif cmd == "disk":
         run_disk_benchmark()
-    elif cmd == "quick":
-        run_quick_benchmark()
+    elif cmd == "gpu":
+        run_gpu_benchmark(10)
     elif cmd == "info":
         print_system_info()
     elif cmd == "version":
