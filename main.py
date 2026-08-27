@@ -27,6 +27,7 @@ BANNER = f"""
 def print_usage():
     print("Usage: python main.py <command>\n", flush=True)
     print("Commands:", flush=True)
+    print("  gui       Launch GUI interface", flush=True)
     print("  cpu       Run CPU benchmark", flush=True)
     print("  memory    Run memory benchmark", flush=True)
     print("  disk      Run disk I/O benchmark", flush=True)
@@ -94,7 +95,10 @@ def main():
 
     cmd = sys.argv[1].lower()
 
-    if cmd == "cpu":
+    if cmd == "gui":
+        from gui import main as gui_main
+        gui_main()
+    elif cmd == "cpu":
         run_cpu_benchmark()
     elif cmd == "memory":
         run_memory_benchmark()
