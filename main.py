@@ -6,7 +6,37 @@ import platform
 import json
 import os
 import math
+import subprocess
 from datetime import datetime
+
+
+REQUIRED_MODULES = {
+    "PySide6": "PySide6",
+    "pygame": "pygame",
+    "numpy": "numpy",
+}
+
+
+def check_and_install_modules():
+    missing = []
+    for module_name, pip_name in REQUIRED_MODULES.items():
+        try:
+            __import__(module_name)
+        except ImportError:
+            missing.append(pip_name)
+
+    if missing:
+        print(f"Installing missing modules: {', '.join(missing)}", flush=True)
+        for pkg in missing:
+            subprocess.check_call(
+                [sys.executable, "-m", "pip", "install", pkg],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+        print("Done!\n", flush=True)
+
+
+check_and_install_modules()
 
 from benchmarks.cpu import run_cpu_benchmark
 from benchmarks.memory import run_memory_benchmark

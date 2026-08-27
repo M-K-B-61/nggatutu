@@ -2,36 +2,43 @@
 
 Real performance benchmark tool. Stresses your PC and gives a score.
 
+## Contributors
+
+Thanks to all contributors who helped build this project!
+
+<a href="https://github.com/M-K-B-61/nggatutu/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=M-K-B-61/nggatutu" />
+</table>
+
 ## Features
 
-- **CPU** - Prime sieve, matrix multiply, SHA256, compression, multi-core stress
+- **CPU** - Prime sieve (50M), matrix multiply (1000x1000), SHA256 (5M), compression, multi-core stress
 - **Memory** - Sequential/random read/write, copy speed, latency
 - **Disk** - Sequential/random 4K, mixed workload
-- **GPU** - 3D rendering with FPS counter
+- **GPU** - 1920x1080 3D rendering with Phong lighting, 10K particles, FPS counter
 - **GUI** - Dark theme with animated score gauge and bar charts
+- **Auto-install** - Missing modules installed automatically
 
 ## Requirements
 
 - Python 3.8+
-- PySide6 (`pip install PySide6`)
-- pygame (`pip install pygame`)
-- numpy (`pip install numpy`)
+- Modules auto-installed on first run (PySide6, pygame, numpy)
 
 ## Installation
 
 ```bash
 git clone https://github.com/M-K-B-61/nggatutu.git
 cd nggatutu
-pip install PySide6 pygame numpy
+python main.py  # Modules install automatically
 ```
 
 ## Usage
 
 ```bash
-# Launch GUI
+# Launch GUI (default)
 python main.py
 
-# CLI mode
+# CLI mode - run all benchmarks
 python main.py cli
 
 # Individual tests
@@ -43,6 +50,14 @@ python main.py gpu
 # System info
 python main.py info
 ```
+
+## How to Contribute
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
