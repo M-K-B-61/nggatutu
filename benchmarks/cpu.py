@@ -46,26 +46,26 @@ def benchmark_multi_core(iterations=5_000_000):
 
 def run_cpu_benchmark():
     """Run full CPU benchmark suite."""
-    print("\n" + "=" * 50)
-    print("  CPU BENCHMARK")
-    print("=" * 50)
+    print("\n" + "=" * 50, flush=True)
+    print("  CPU BENCHMARK", flush=True)
+    print("=" * 50, flush=True)
 
     print("\n[1/3] Single Core Integer... ", end="", flush=True)
     int_score, _ = benchmark_single_core_int()
-    print(f"{int_score:.2f} MOPS")
+    print(f"{int_score:.2f} MOPS", flush=True)
 
     print("[2/3] Single Core Float...   ", end="", flush=True)
     float_score, _ = benchmark_single_core_float()
-    print(f"{float_score:.2f} MOPS")
+    print(f"{float_score:.2f} MOPS", flush=True)
 
     print("[3/3] Multi Core...          ", end="", flush=True)
     multi_score, _ = benchmark_multi_core()
-    print(f"{multi_score:.2f} MOPS")
+    print(f"{multi_score:.2f} MOPS", flush=True)
 
     final_score = (int_score + float_score + multi_score) / 3
-    print("\n" + "-" * 50)
-    print(f"  CPU SCORE: {final_score:.2f}")
-    print("-" * 50)
+    print("\n" + "-" * 50, flush=True)
+    print(f"  CPU SCORE: {final_score:.2f}", flush=True)
+    print("-" * 50, flush=True)
 
     return {
         "single_int": int_score,

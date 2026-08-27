@@ -56,26 +56,26 @@ def benchmark_mem_random(size_mb=64, iterations=1_000_000):
 
 def run_memory_benchmark():
     """Run full memory benchmark suite."""
-    print("\n" + "=" * 50)
-    print("  MEMORY BENCHMARK")
-    print("=" * 50)
+    print("\n" + "=" * 50, flush=True)
+    print("  MEMORY BENCHMARK", flush=True)
+    print("=" * 50, flush=True)
 
     print("\n[1/3] Sequential Write...    ", end="", flush=True)
     write_speed = benchmark_mem_write()
-    print(f"{write_speed:.2f} MB/s")
+    print(f"{write_speed:.2f} MB/s", flush=True)
 
     print("[2/3] Sequential Read...     ", end="", flush=True)
     read_speed, _ = benchmark_mem_read()
-    print(f"{read_speed:.2f} MB/s")
+    print(f"{read_speed:.2f} MB/s", flush=True)
 
     print("[3/3] Random Access...       ", end="", flush=True)
     random_speed, _ = benchmark_mem_random()
-    print(f"{random_speed:.2f} MOPS")
+    print(f"{random_speed:.2f} MOPS", flush=True)
 
     avg_bandwidth = (write_speed + read_speed) / 2
-    print("\n" + "-" * 50)
-    print(f"  MEMORY BANDWIDTH: {avg_bandwidth:.2f} MB/s")
-    print("-" * 50)
+    print("\n" + "-" * 50, flush=True)
+    print(f"  MEMORY BANDWIDTH: {avg_bandwidth:.2f} MB/s", flush=True)
+    print("-" * 50, flush=True)
 
     return {
         "write_mbps": write_speed,

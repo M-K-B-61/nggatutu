@@ -25,27 +25,27 @@ BANNER = f"""
 
 
 def print_usage():
-    print("Usage: python main.py <command>\n")
-    print("Commands:")
-    print("  cpu       Run CPU benchmark")
-    print("  memory    Run memory benchmark")
-    print("  disk      Run disk I/O benchmark")
-    print("  quick     Run all benchmarks")
-    print("  info      Show system information")
-    print("  version   Show version")
-    print("  help      Show this help")
+    print("Usage: python main.py <command>\n", flush=True)
+    print("Commands:", flush=True)
+    print("  cpu       Run CPU benchmark", flush=True)
+    print("  memory    Run memory benchmark", flush=True)
+    print("  disk      Run disk I/O benchmark", flush=True)
+    print("  quick     Run all benchmarks", flush=True)
+    print("  info      Show system information", flush=True)
+    print("  version   Show version", flush=True)
+    print("  help      Show this help", flush=True)
 
 
 def print_system_info():
-    print(BANNER)
-    print("System Information")
-    print("=" * 50)
-    print(f"  OS:         {platform.system()} {platform.release()}")
-    print(f"  Arch:       {platform.machine()}")
-    print(f"  Python:     {platform.python_version()}")
-    print(f"  CPU:        {platform.processor() or 'Unknown'}")
-    print(f"  Time:       {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print()
+    print(BANNER, flush=True)
+    print("System Information", flush=True)
+    print("=" * 50, flush=True)
+    print(f"  OS:         {platform.system()} {platform.release()}", flush=True)
+    print(f"  Arch:       {platform.machine()}", flush=True)
+    print(f"  Python:     {platform.python_version()}", flush=True)
+    print(f"  CPU:        {platform.processor() or 'Unknown'}", flush=True)
+    print(f"  Time:       {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", flush=True)
+    print(flush=True)
 
 
 def run_quick_benchmark():
@@ -105,7 +105,7 @@ def main():
     elif cmd == "info":
         print_system_info()
     elif cmd == "version":
-        print(f"nggatutu v{VERSION}")
+        print(f"nggatutu v{VERSION}", flush=True)
     elif cmd in ("help", "-h", "--help"):
         print_usage()
     else:
@@ -115,4 +115,10 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        print(f"\nError: {e}")
+    finally:
+        if os.name == "nt":
+            os.system("pause")

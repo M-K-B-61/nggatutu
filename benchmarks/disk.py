@@ -78,33 +78,33 @@ def benchmark_random_read(test_file, size_mb=64):
 
 def run_disk_benchmark():
     """Run full disk I/O benchmark suite."""
-    print("\n" + "=" * 50)
-    print("  DISK I/O BENCHMARK")
-    print("=" * 50)
+    print("\n" + "=" * 50, flush=True)
+    print("  DISK I/O BENCHMARK", flush=True)
+    print("=" * 50, flush=True)
 
     with tempfile.TemporaryDirectory() as tmpdir:
         test_file = os.path.join(tmpdir, "benchmark.tmp")
 
         print("\n[1/4] Sequential Write...    ", end="", flush=True)
         seq_write = benchmark_sequential_write(test_file)
-        print(f"{seq_write:.2f} MB/s")
+        print(f"{seq_write:.2f} MB/s", flush=True)
 
         print("[2/4] Sequential Read...     ", end="", flush=True)
         seq_read = benchmark_sequential_read(test_file)
-        print(f"{seq_read:.2f} MB/s")
+        print(f"{seq_read:.2f} MB/s", flush=True)
 
         print("[3/4] Random Write (4K)...   ", end="", flush=True)
         rand_write = benchmark_random_write(test_file)
-        print(f"{rand_write:.2f} MB/s")
+        print(f"{rand_write:.2f} MB/s", flush=True)
 
         print("[4/4] Random Read (4K)...    ", end="", flush=True)
         rand_read = benchmark_random_read(test_file)
-        print(f"{rand_read:.2f} MB/s")
+        print(f"{rand_read:.2f} MB/s", flush=True)
 
-    print("\n" + "-" * 50)
-    print(f"  Sequential: R {seq_read:.2f} / W {seq_write:.2f} MB/s")
-    print(f"  Random:     R {rand_read:.2f} / W {rand_write:.2f} MB/s")
-    print("-" * 50)
+    print("\n" + "-" * 50, flush=True)
+    print(f"  Sequential: R {seq_read:.2f} / W {seq_write:.2f} MB/s", flush=True)
+    print(f"  Random:     R {rand_read:.2f} / W {rand_write:.2f} MB/s", flush=True)
+    print("-" * 50, flush=True)
 
     return {
         "seq_read": seq_read,
