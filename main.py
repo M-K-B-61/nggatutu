@@ -173,37 +173,49 @@ def launch_gui():
         def __init__(self):
             self.splash = None
             self.progress_value = 0
-            self.progress_timer = None
+            self.dots = 0
 
         def show(self):
-            pixmap = QPixmap(500, 300)
+            pixmap = QPixmap(600, 350)
             pixmap.fill(QColor(13, 17, 23))
 
             painter = QPainter(pixmap)
             painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
-            gradient = QLinearGradient(0, 0, 500, 300)
+            gradient = QLinearGradient(0, 0, 600, 350)
             gradient.setColorAt(0, QColor(13, 17, 23))
-            gradient.setColorAt(1, QColor(22, 27, 34))
-            painter.fillRect(0, 0, 500, 300, gradient)
+            gradient.setColorAt(0.5, QColor(22, 27, 34))
+            gradient.setColorAt(1, QColor(13, 17, 23))
+            painter.fillRect(0, 0, 600, 350, gradient)
+
+            glow = QLinearGradient(200, 100, 400, 100)
+            glow.setColorAt(0, QColor(88, 166, 255, 0))
+            glow.setColorAt(0.5, QColor(88, 166, 255, 30))
+            glow.setColorAt(1, QColor(88, 166, 255, 0))
+            painter.fillRect(0, 80, 600, 80, glow)
 
             painter.setPen(QColor(88, 166, 255))
-            font = QFont("Segoe UI", 36, QFont.Weight.Bold)
+            font = QFont("Segoe UI", 42, QFont.Weight.Bold)
             painter.setFont(font)
-            painter.drawText(pixmap.rect().adjusted(0, -40, 0, 0), Qt.AlignmentFlag.AlignCenter, "Ngga Tutu")
+            painter.drawText(pixmap.rect().adjusted(0, -50, 0, 0), Qt.AlignmentFlag.AlignCenter, "Ngga Tutu")
 
             painter.setPen(QColor(139, 148, 158))
-            font = QFont("Segoe UI", 12)
+            font = QFont("Segoe UI", 13)
             painter.setFont(font)
-            painter.drawText(pixmap.rect().adjusted(0, 30, 0, 0), Qt.AlignmentFlag.AlignCenter, "Real Performance Benchmark")
+            painter.drawText(pixmap.rect().adjusted(0, 20, 0, 0), Qt.AlignmentFlag.AlignCenter, "Real Performance Benchmark")
 
             painter.setPen(QColor(88, 166, 255))
             font = QFont("Segoe UI", 10)
             painter.setFont(font)
-            painter.drawText(pixmap.rect().adjusted(0, 70, 0, 0), Qt.AlignmentFlag.AlignCenter, f"v{VERSION}")
+            painter.drawText(pixmap.rect().adjusted(0, 50, 0, 0), Qt.AlignmentFlag.AlignCenter, f"v{VERSION}")
 
-            painter.setPen(QColor(50, 50, 50))
-            painter.drawRoundedRect(100, 200, 300, 8, 4, 4)
+            painter.setPen(QColor(40, 45, 55))
+            painter.drawRoundedRect(150, 250, 300, 6, 3, 3)
+
+            painter.setPen(QColor(60, 65, 75))
+            font = QFont("Segoe UI", 8)
+            painter.setFont(font)
+            painter.drawText(150, 280, 300, 15, Qt.AlignmentFlag.AlignCenter, "Initializing benchmarks...")
 
             painter.end()
 
@@ -214,21 +226,70 @@ def launch_gui():
             if not self.splash:
                 return
             self.progress_value = min(value, 100)
-            pixmap = self.splash.pixmap()
+
+            pixmap = QPixmap(600, 350)
+            pixmap.fill(QColor(13, 17, 23))
+
             painter = QPainter(pixmap)
             painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
-            painter.fillRect(100, 200, 300, 8, QColor(50, 50, 50))
-            bar_width = int(300 * self.progress_value / 100)
-            if bar_width > 0:
-                painter.setBrush(QBrush(QColor(88, 166, 255)))
-                painter.setPen(Qt.PenStyle.NoPen)
-                painter.drawRoundedRect(100, 200, bar_width, 8, 4, 4)
+            gradient = QLinearGradient(0, 0, 600, 350)
+            gradient.setColorAt(0, QColor(13, 17, 23))
+            gradient.setColorAt(0.5, QColor(22, 27, 34))
+            gradient.setColorAt(1, QColor(13, 17, 23))
+            painter.fillRect(0, 0, 600, 350, gradient)
+
+            glow = QLinearGradient(200, 100, 400, 100)
+            glow.setColorAt(0, QColor(88, 166, 255, 0))
+            glow.setColorAt(0.5, QColor(88, 166, 255, 30))
+            glow.setColorAt(1, QColor(88, 166, 255, 0))
+            painter.fillRect(0, 80, 600, 80, glow)
+
+            painter.setPen(QColor(88, 166, 255))
+            font = QFont("Segoe UI", 42, QFont.Weight.Bold)
+            painter.setFont(font)
+            painter.drawText(pixmap.rect().adjusted(0, -50, 0, 0), Qt.AlignmentFlag.AlignCenter, "Ngga Tutu")
 
             painter.setPen(QColor(139, 148, 158))
+            font = QFont("Segoe UI", 13)
+            painter.setFont(font)
+            painter.drawText(pixmap.rect().adjusted(0, 20, 0, 0), Qt.AlignmentFlag.AlignCenter, "Real Performance Benchmark")
+
+            painter.setPen(QColor(88, 166, 255))
+            font = QFont("Segoe UI", 10)
+            painter.setFont(font)
+            painter.drawText(pixmap.rect().adjusted(0, 50, 0, 0), Qt.AlignmentFlag.AlignCenter, f"v{VERSION}")
+
+            painter.setPen(QColor(40, 45, 55))
+            painter.drawRoundedRect(150, 250, 300, 6, 3, 3)
+
+            bar_width = int(300 * self.progress_value / 100)
+            if bar_width > 0:
+                bar_gradient = QLinearGradient(150, 0, 450, 0)
+                bar_gradient.setColorAt(0, QColor(88, 166, 255))
+                bar_gradient.setColorAt(1, QColor(120, 180, 255))
+                painter.setBrush(QBrush(bar_gradient))
+                painter.setPen(Qt.PenStyle.NoPen)
+                painter.drawRoundedRect(150, 250, bar_width, 6, 3, 3)
+
+            self.dots = (self.dots + 1) % 4
+            dots_str = "." * self.dots
+
+            status = "Initializing benchmarks" if self.progress_value < 30 else \
+                     "Loading CPU tests" if self.progress_value < 50 else \
+                     "Loading Memory tests" if self.progress_value < 70 else \
+                     "Loading GPU renderer" if self.progress_value < 90 else \
+                     "Ready"
+
+            painter.setPen(QColor(100, 110, 120))
             font = QFont("Segoe UI", 9)
             painter.setFont(font)
-            painter.drawText(100, 240, 300, 20, Qt.AlignmentFlag.AlignCenter, f"Loading... {self.progress_value}%")
+            painter.drawText(150, 280, 300, 15, Qt.AlignmentFlag.AlignCenter, f"{status}{dots_str}")
+
+            painter.setPen(QColor(139, 148, 158))
+            font = QFont("Segoe UI", 8)
+            painter.setFont(font)
+            painter.drawText(150, 300, 300, 15, Qt.AlignmentFlag.AlignCenter, f"{self.progress_value}%")
 
             painter.end()
             self.splash.setPixmap(pixmap)
