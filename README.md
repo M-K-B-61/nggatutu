@@ -8,7 +8,7 @@ Thanks to all contributors who helped build this project!
 
 <a href="https://github.com/M-K-B-61/nggatutu/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=M-K-B-61/nggatutu" />
-</table>
+</a>
 
 ## Features
 
@@ -16,8 +16,9 @@ Thanks to all contributors who helped build this project!
 - **Memory** - Sequential/random read/write, copy speed, latency
 - **Disk** - Sequential/random 4K, mixed workload
 - **GPU** - 1920x1080 3D rendering with Phong lighting, 10K particles, FPS counter
-- **GUI** - Dark theme with animated score gauge and bar charts
+- **GUI** - Dark theme with animated score gauge, bar charts, splash screen
 - **Auto-install** - Missing modules installed automatically
+- **Grading** - S/A/B/C/D grade system based on performance
 
 ## Requirements
 
