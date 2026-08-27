@@ -1,2 +1,4 @@
 @echo off
-start "" pythonw.exe "%~dp0main.py"
+cd /d "%~dp0"
+python main.py
+pause
