@@ -1,3 +1,2 @@
 @echo off
-python main.py gui
-pause
+python main.py
