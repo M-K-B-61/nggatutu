@@ -172,6 +172,8 @@ def launch_gui():
     class SplashScreen:
         def __init__(self):
             self.splash = None
+            self.progress_value = 0
+            self.progress_timer = None
 
         def show(self):
             pixmap = QPixmap(500, 300)
@@ -201,44 +203,40 @@ def launch_gui():
             painter.drawText(pixmap.rect().adjusted(0, 70, 0, 0), Qt.AlignmentFlag.AlignCenter, f"v{VERSION}")
 
             painter.setPen(QColor(50, 50, 50))
-            painter.drawRoundedRect(100, 200, 300, 4, 2, 2)
-            painter.setBrush(QBrush(QColor(88, 166, 255)))
-            painter.setPen(Qt.PenStyle.NoPen)
-            painter.drawRoundedRect(100, 200, 0, 4, 2, 2)
+            painter.drawRoundedRect(100, 200, 300, 8, 4, 4)
 
             painter.end()
 
             self.splash = QSplashScreen(pixmap)
             self.splash.show()
 
-            self.progress_timer = QTimer()
-            self.progress_value = 0
-            self.progress_timer.timeout.connect(self.update_progress)
-            self.progress_timer.start(30)
-
-        def update_progress(self):
-            self.progress_value += 2
-            if self.progress_value >= 300:
-                self.progress_timer.stop()
-                self.splash.finish(None)
+        def set_progress(self, value):
+            if not self.splash:
                 return
-
+            self.progress_value = min(value, 100)
             pixmap = self.splash.pixmap()
             painter = QPainter(pixmap)
-            painter.setCompositionMode(QPainter.CompositionMode.CompositionMode_SourceOver)
+            painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
-            painter.fillRect(100, 200, 300, 4, QColor(50, 50, 50))
-            painter.setBrush(QBrush(QColor(88, 166, 255)))
-            painter.setPen(Qt.PenStyle.NoPen)
-            painter.drawRoundedRect(100, 200, self.progress_value, 4, 2, 2)
+            painter.fillRect(100, 200, 300, 8, QColor(50, 50, 50))
+            bar_width = int(300 * self.progress_value / 100)
+            if bar_width > 0:
+                painter.setBrush(QBrush(QColor(88, 166, 255)))
+                painter.setPen(Qt.PenStyle.NoPen)
+                painter.drawRoundedRect(100, 200, bar_width, 8, 4, 4)
 
             painter.setPen(QColor(139, 148, 158))
             font = QFont("Segoe UI", 9)
             painter.setFont(font)
-            painter.drawText(100, 230, 300, 20, Qt.AlignmentFlag.AlignCenter, f"Loading... {int(self.progress_value / 3)}%")
+            painter.drawText(100, 240, 300, 20, Qt.AlignmentFlag.AlignCenter, f"Loading... {self.progress_value}%")
 
             painter.end()
             self.splash.setPixmap(pixmap)
+
+        def close(self):
+            if self.splash:
+                self.splash.close()
+                self.splash = None
 
     class ScoreGauge(QWidget):
         def __init__(self, parent=None):
@@ -626,11 +624,25 @@ def launch_gui():
 
     from PySide6.QtCore import QTimer
 
-    def show_main():
-        window = MainWindow()
-        window.show()
+    window = [None]
 
-    QTimer.singleShot(1000, show_main)
+    def show_main():
+        splash.close()
+        window[0] = MainWindow()
+        window[0].show()
+
+    progress = [0]
+    progress_timer = QTimer()
+
+    def update_progress():
+        progress[0] += 3
+        splash.set_progress(progress[0])
+        if progress[0] >= 100:
+            progress_timer.stop()
+            show_main()
+
+    progress_timer.timeout.connect(update_progress)
+    progress_timer.start(30)
 
     app.exec()
 
