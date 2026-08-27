@@ -625,15 +625,14 @@ def launch_gui():
     splash.show()
 
     from PySide6.QtCore import QTimer
-    QTimer.singleShot(1000, lambda: _show_main(app))
+
+    def show_main():
+        window = MainWindow()
+        window.show()
+
+    QTimer.singleShot(1000, show_main)
 
     app.exec()
-
-
-def _show_main(app):
-    from PySide6.QtWidgets import QMainWindow
-    window = MainWindow()
-    window.show()
 
 
 def main():
