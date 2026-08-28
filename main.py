@@ -106,36 +106,37 @@ def launch_gui():
     QTabWidget::pane { border: none; background: #0d1117; }
     QTabBar::tab {
         background: #161b22; color: #8b949e;
-        padding: 10px 20px; margin-right: 2px;
+        padding: 10px 24px; margin-right: 2px;
         border-top-left-radius: 8px; border-top-right-radius: 8px;
-        font-size: 13px; font-weight: bold;
+        font-size: 13px; font-weight: bold; min-width: 80px;
     }
     QTabBar::tab:selected { background: #0d1117; color: #58a6ff; border-bottom: 2px solid #58a6ff; }
     QTabBar::tab:hover { background: #21262d; }
     QPushButton {
         background: #21262d; color: #e6edf3; border: 1px solid #30363d;
-        border-radius: 8px; padding: 8px 16px; font-size: 12px; font-weight: bold;
+        border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: bold;
+        min-height: 20px;
     }
     QPushButton:hover { background: #30363d; border-color: #58a6ff; }
     QPushButton:disabled { background: #161b22; color: #484f58; }
     QTextEdit {
         background: #0d1117; color: #0f0; border: 1px solid #21262d;
-        border-radius: 8px; padding: 10px;
-        font-family: 'Cascadia Code', Consolas, monospace; font-size: 11px;
+        border-radius: 8px; padding: 12px;
+        font-family: 'Cascadia Code', Consolas, monospace; font-size: 12px;
     }
     QLabel { background: transparent; }
     QProgressBar {
         background: #21262d; border: none; border-radius: 4px;
-        height: 8px; text-align: center;
+        height: 10px; text-align: center;
     }
     QProgressBar::chunk { background: #58a6ff; border-radius: 4px; }
     QScrollArea { border: none; }
     """
 
-    CARD_STYLE = "background: #161b22; border: 1px solid #21262d; border-radius: 12px; padding: 16px;"
-    HEADER_STYLE = "color: #58a6ff; font-size: 16px; font-weight: bold;"
-    LABEL_STYLE = "color: #8b949e; font-size: 12px;"
-    VALUE_STYLE = "color: #e6edf3; font-size: 13px; font-weight: bold;"
+    CARD_STYLE = "background: #161b22; border: 1px solid #21262d; border-radius: 12px; padding: 20px;"
+    HEADER_STYLE = "color: #58a6ff; font-size: 16px; font-weight: bold; padding: 4px 0;"
+    LABEL_STYLE = "color: #8b949e; font-size: 13px; padding: 2px 0;"
+    VALUE_STYLE = "color: #e6edf3; font-size: 13px; font-weight: bold; padding: 2px 0;"
 
     class BenchmarkWorker(QThread):
         progress = Signal(str)
@@ -376,8 +377,8 @@ def launch_gui():
         card = QFrame()
         card.setStyleSheet(CARD_STYLE)
         card_layout = QVBoxLayout(card)
-        card_layout.setContentsMargins(16, 16, 16, 16)
-        card_layout.setSpacing(8)
+        card_layout.setContentsMargins(20, 20, 20, 20)
+        card_layout.setSpacing(10)
         t = QLabel(title)
         t.setStyleSheet(HEADER_STYLE)
         card_layout.addWidget(t)
@@ -386,13 +387,16 @@ def launch_gui():
 
     def make_stat_row(label, value):
         row = QHBoxLayout()
+        row.setSpacing(12)
         l = QLabel(label)
         l.setStyleSheet(LABEL_STYLE)
+        l.setMinimumWidth(140)
         row.addWidget(l)
         v = QLabel(str(value))
         v.setStyleSheet(VALUE_STYLE)
-        v.setAlignment(Qt.AlignmentFlag.AlignRight)
-        row.addWidget(v)
+        v.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        v.setWordWrap(True)
+        row.addWidget(v, 1)
         return row
 
     class DashboardTab(QWidget):
@@ -404,40 +408,48 @@ def launch_gui():
 
         def _setup_ui(self):
             layout = QVBoxLayout(self)
-            layout.setContentsMargins(20, 20, 20, 20)
-            layout.setSpacing(16)
+            layout.setContentsMargins(24, 24, 24, 24)
+            layout.setSpacing(20)
 
             top = QHBoxLayout()
-            top.setSpacing(16)
+            top.setSpacing(30)
+
             self.gauge = ScoreGauge()
-            top.addWidget(self.gauge, alignment=Qt.AlignmentFlag.AlignCenter)
+            self.gauge.setFixedSize(240, 240)
+            top.addWidget(self.gauge, alignment=Qt.AlignmentFlag.AlignTop)
 
             right = QVBoxLayout()
-            right.setSpacing(12)
+            right.setSpacing(16)
+
             self.status_label = QLabel("Ready to benchmark")
-            self.status_label.setStyleSheet("color: #8b949e; font-size: 14px;")
+            self.status_label.setStyleSheet("color: #8b949e; font-size: 15px; padding: 4px 0;")
             right.addWidget(self.status_label)
 
-            btn_row = QHBoxLayout()
-            self.start_btn = QPushButton("  START BENCHMARK  ")
-            self.start_btn.setFixedHeight(48)
+            self.start_btn = QPushButton("START BENCHMARK")
+            self.start_btn.setFixedHeight(52)
+            self.start_btn.setMinimumWidth(280)
             self.start_btn.setStyleSheet("""
                 QPushButton {
                     background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #238636, stop:1 #2ea043);
                     color: white; border: none; border-radius: 10px;
-                    font-size: 14px; font-weight: bold; letter-spacing: 1px;
+                    font-size: 15px; font-weight: bold; letter-spacing: 1px;
                 }
                 QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #2ea043, stop:1 #3fb950); }
                 QPushButton:disabled { background: #333; color: #666; }
             """)
             self.start_btn.clicked.connect(self._run_all)
-            btn_row.addWidget(self.start_btn)
-            right.addLayout(btn_row)
+            right.addWidget(self.start_btn)
 
             profile_row = QHBoxLayout()
-            for name, label in [("quick", "Quick"), ("full", "Full"), ("gaming", "Gaming")]:
+            profile_row.setSpacing(10)
+            for name, label in [("quick", "Quick Test"), ("full", "Full"), ("gaming", "Gaming"), ("productivity", "Productivity")]:
                 btn = QPushButton(label)
-                btn.setFixedHeight(36)
+                btn.setFixedHeight(40)
+                btn.setMinimumWidth(100)
+                btn.setStyleSheet("""
+                    QPushButton { background: #21262d; color: #e6edf3; border: 1px solid #30363d; border-radius: 8px; font-size: 12px; font-weight: bold; padding: 0 12px; }
+                    QPushButton:hover { background: #30363d; border-color: #58a6ff; }
+                """)
                 btn.clicked.connect(lambda checked, n=name: self._run_profile(n))
                 profile_row.addWidget(btn)
             right.addLayout(profile_row)
@@ -447,10 +459,11 @@ def launch_gui():
             layout.addLayout(top)
 
             self.chart = BarChart()
+            self.chart.setFixedHeight(180)
             layout.addWidget(self.chart)
 
             self.grade_label = QLabel("")
-            self.grade_label.setStyleSheet("color: #8b949e; font-size: 12px;")
+            self.grade_label.setStyleSheet("color: #8b949e; font-size: 13px; padding: 8px 0;")
             self.grade_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             layout.addWidget(self.grade_label)
             layout.addStretch()
@@ -505,19 +518,29 @@ def launch_gui():
 
         def _setup_ui(self):
             layout = QVBoxLayout(self)
-            layout.setContentsMargins(20, 20, 20, 20)
-            layout.setSpacing(12)
+            layout.setContentsMargins(24, 24, 24, 24)
+            layout.setSpacing(16)
+
+            title = QLabel("Individual Benchmarks")
+            title.setStyleSheet(HEADER_STYLE)
+            layout.addWidget(title)
+
+            desc = QLabel("Run individual component benchmarks. Each test takes 30-120 seconds.")
+            desc.setStyleSheet("color: #8b949e; font-size: 13px; padding: 4px 0;")
+            layout.addWidget(desc)
 
             self.output = QTextEdit()
             self.output.setReadOnly(True)
-            layout.addWidget(self.output)
+            layout.addWidget(self.output, 1)
 
             btn_row = QHBoxLayout()
+            btn_row.setSpacing(12)
             for name, color in [("CPU", "#58a6ff"), ("Memory", "#00c864"), ("Disk", "#ffb400"), ("GPU", "#ff5050")]:
-                btn = QPushButton(f"Run {name}")
-                btn.setFixedHeight(42)
+                btn = QPushButton(f"Run {name} Test")
+                btn.setFixedHeight(46)
+                btn.setMinimumWidth(130)
                 btn.setStyleSheet(f"""
-                    QPushButton {{ background: {color}; color: white; font-weight: bold; }}
+                    QPushButton {{ background: {color}; color: white; font-weight: bold; font-size: 13px; border: none; border-radius: 8px; padding: 0 16px; }}
                     QPushButton:hover {{ background: {color}dd; }}
                     QPushButton:disabled {{ background: #333; color: #666; }}
                 """)
@@ -559,44 +582,69 @@ def launch_gui():
 
         def _setup_ui(self):
             layout = QVBoxLayout(self)
-            layout.setContentsMargins(20, 20, 20, 20)
+            layout.setContentsMargins(24, 24, 24, 24)
             layout.setSpacing(16)
+
+            title = QLabel("Stress Tests")
+            title.setStyleSheet(HEADER_STYLE)
+            layout.addWidget(title)
+
+            desc = QLabel("Run extended stress tests to check system stability and thermal performance.")
+            desc.setStyleSheet("color: #8b949e; font-size: 13px; padding: 4px 0;")
+            layout.addWidget(desc)
 
             for test_name, color in [("CPU", "#58a6ff"), ("GPU", "#ff5050"), ("Combined", "#ffb400")]:
                 card = QFrame()
                 card.setStyleSheet(CARD_STYLE)
                 card_layout = QHBoxLayout(card)
-                card_layout.setContentsMargins(16, 12, 16, 12)
+                card_layout.setContentsMargins(20, 16, 20, 16)
+                card_layout.setSpacing(12)
 
                 t = QLabel(test_name)
-                t.setStyleSheet(f"color: {color}; font-size: 14px; font-weight: bold; min-width: 80px;")
+                t.setStyleSheet(f"color: {color}; font-size: 15px; font-weight: bold; min-width: 100px; padding: 4px 0;")
                 card_layout.addWidget(t)
 
                 for dur, label in [(300, "5 min"), (600, "10 min"), (1800, "30 min")]:
                     btn = QPushButton(label)
-                    btn.setFixedHeight(36)
+                    btn.setFixedHeight(40)
+                    btn.setMinimumWidth(90)
+                    btn.setStyleSheet("""
+                        QPushButton { background: #21262d; color: #e6edf3; border: 1px solid #30363d; border-radius: 8px; font-size: 13px; font-weight: bold; padding: 0 14px; }
+                        QPushButton:hover { background: #30363d; border-color: #58a6ff; }
+                    """)
                     btn.clicked.connect(lambda checked, n=test_name.lower(), d=dur: self._start_stress(n, d))
                     card_layout.addWidget(btn)
 
+                card_layout.addStretch()
                 layout.addWidget(card)
 
             self.progress_bar = QProgressBar()
             self.progress_bar.setValue(0)
+            self.progress_bar.setFixedHeight(12)
             layout.addWidget(self.progress_bar)
 
             self.status_label = QLabel("Select a stress test to begin")
-            self.status_label.setStyleSheet(LABEL_STYLE)
+            self.status_label.setStyleSheet("color: #8b949e; font-size: 13px; padding: 4px 0;")
             layout.addWidget(self.status_label)
 
             self.output = QTextEdit()
             self.output.setReadOnly(True)
-            layout.addWidget(self.output)
+            layout.addWidget(self.output, 1)
 
-            self.stop_btn = QPushButton("Stop")
-            self.stop_btn.setFixedHeight(36)
+            btn_row = QHBoxLayout()
+            btn_row.addStretch()
+            self.stop_btn = QPushButton("Stop Test")
+            self.stop_btn.setFixedHeight(40)
+            self.stop_btn.setMinimumWidth(120)
             self.stop_btn.setEnabled(False)
+            self.stop_btn.setStyleSheet("""
+                QPushButton { background: #da3633; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: bold; padding: 0 20px; }
+                QPushButton:hover { background: #f85149; }
+                QPushButton:disabled { background: #333; color: #666; }
+            """)
             self.stop_btn.clicked.connect(self._stop)
-            layout.addWidget(self.stop_btn)
+            btn_row.addWidget(self.stop_btn)
+            layout.addLayout(btn_row)
 
         def _start_stress(self, test_type, duration):
             self.output.clear()
@@ -668,21 +716,30 @@ def launch_gui():
 
         def _setup_ui(self):
             layout = QVBoxLayout(self)
-            layout.setContentsMargins(20, 20, 20, 20)
-            layout.setSpacing(12)
+            layout.setContentsMargins(24, 24, 24, 24)
+            layout.setSpacing(16)
 
+            title = QLabel("System Information")
+            title.setStyleSheet(HEADER_STYLE)
+            layout.addWidget(title)
+
+            btn_row = QHBoxLayout()
             refresh_btn = QPushButton("Refresh")
-            refresh_btn.setFixedWidth(100)
+            refresh_btn.setFixedHeight(38)
+            refresh_btn.setMinimumWidth(100)
             refresh_btn.clicked.connect(self._load)
-            layout.addWidget(refresh_btn)
+            btn_row.addWidget(refresh_btn)
+            btn_row.addStretch()
+            layout.addLayout(btn_row)
 
             scroll = QScrollArea()
             scroll.setWidgetResizable(True)
             self.content = QWidget()
             self.content_layout = QVBoxLayout(self.content)
-            self.content_layout.setSpacing(12)
+            self.content_layout.setSpacing(16)
+            self.content_layout.setContentsMargins(0, 0, 0, 0)
             scroll.setWidget(self.content)
-            layout.addWidget(scroll)
+            layout.addWidget(scroll, 1)
 
             self._load()
 
@@ -712,14 +769,17 @@ def launch_gui():
             self.content_layout.addWidget(make_card("CPU", cpu_layout))
 
             gpu_list = info.get("gpu", [])
-            for i, gpu in enumerate(gpu_list):
+            real_gpus = [g for g in gpu_list if g.get("vram_gb") or ("NVIDIA" in (g.get("manufacturer", "") or "")) or ("Intel" in (g.get("manufacturer", "") or ""))]
+            if not real_gpus:
+                real_gpus = gpu_list[:2]
+            for i, gpu in enumerate(real_gpus):
                 gpu_layout = QVBoxLayout()
                 gpu_layout.addLayout(make_stat_row("Model", gpu.get("name", "Unknown")))
                 if gpu.get("vram_gb"):
                     gpu_layout.addLayout(make_stat_row("VRAM", f"{gpu['vram_gb']} GB"))
                 if gpu.get("driver_version") and gpu["driver_version"] != "Unknown":
                     gpu_layout.addLayout(make_stat_row("Driver", gpu["driver_version"]))
-                title = f"GPU" + (f" {i+1}" if len(gpu_list) > 1 else "")
+                title = f"GPU" + (f" {i+1}" if len(real_gpus) > 1 else "")
                 self.content_layout.addWidget(make_card(title, gpu_layout))
 
             ram = info.get("ram", {})
@@ -748,7 +808,8 @@ def launch_gui():
         def __init__(self):
             super().__init__()
             self.setWindowTitle("Ngga Tutu Benchmark")
-            self.setMinimumSize(1000, 700)
+            self.setMinimumSize(1100, 750)
+            self.resize(1200, 800)
             self.setup_ui()
 
         def setup_ui(self):
