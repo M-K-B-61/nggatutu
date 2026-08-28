@@ -466,9 +466,6 @@ def launch_gui():
         def _run_profile(self, profile_name):
             self.start_btn.setEnabled(False)
             self.start_btn.setText("  RUNNING...  ")
-            profile = get_profile.__wrapped__ if hasattr(get_profile, '__wrapped__') else None
-            from benchmarks.profiles import PROFILES
-            prof = PROFILES.get(profile_name, PROFILES["full"])
             self._worker = BenchmarkWorker("all")
             self._worker.progress.connect(lambda msg: self.status_label.setText(msg))
             self._worker.result_ready.connect(self._on_done)
