@@ -331,22 +331,39 @@ def _run_max_benchmark(pygame, duration=25):
     avg_fps = sum(fps_list) / len(fps_list) if fps_list else 0
     min_fps = min(fps_list) if fps_list else 0
     max_fps = max(fps_list) if fps_list else 0
+
+    # 1% low and 0.1% low
+    sorted_ft = sorted(frame_times)
+    n = len(sorted_ft)
+    one_pct_count = max(1, n // 100)
+    zero_pct_count = max(1, n // 1000)
+    one_pct_low_ft = sorted_ft[-one_pct_count] if sorted_ft else 0
+    zero_pct_low_ft = sorted_ft[-zero_pct_count] if sorted_ft else 0
+    one_percent_low = 1.0 / one_pct_low_ft if one_pct_low_ft > 0 else 0
+    zero_point_one_percent_low = 1.0 / zero_pct_low_ft if zero_pct_low_ft > 0 else 0
+
     score = avg_fps * 2 + frame_tris / max(frame_count, 1) * 0.05
 
-    print(f"  Average FPS:     {avg_fps:.1f}", flush=True)
-    print(f"  Min FPS:         {min_fps:.1f}", flush=True)
-    print(f"  Max FPS:         {max_fps:.1f}", flush=True)
-    print(f"  Total Frames:    {frame_count}", flush=True)
-    print(f"  Total Triangles: {frame_tris}", flush=True)
-    print(f"  Triangles/Frame: {frame_tris // max(frame_count, 1)}", flush=True)
-    print("\n" + "-" * 55)
+    print(f"\n  Average FPS:              {avg_fps:.1f}", flush=True)
+    print(f"  Min FPS:                  {min_fps:.1f}", flush=True)
+    print(f"  Max FPS:                  {max_fps:.1f}", flush=True)
+    print(f"  1% Low:                   {one_percent_low:.1f} FPS", flush=True)
+    print(f"  0.1% Low:                 {zero_point_one_percent_low:.1f} FPS", flush=True)
+    print(f"  Frame Time (avg):         {1000/avg_fps:.1f} ms" if avg_fps > 0 else "  Frame Time: N/A", flush=True)
+    print(f"  Total Frames:             {frame_count}", flush=True)
+    print(f"  Total Triangles:          {frame_tris}", flush=True)
+    print(f"  Triangles/Frame:          {frame_tris // max(frame_count, 1)}", flush=True)
+    print("\n" + "-" * 60)
     print(f"  GPU SCORE: {score:.0f}")
-    print("-" * 55, flush=True)
+    print("-" * 60, flush=True)
 
     return {
         "avg_fps": avg_fps,
         "min_fps": min_fps,
         "max_fps": max_fps,
+        "one_percent_low": one_percent_low,
+        "zero_point_one_percent_low": zero_point_one_percent_low,
+        "frame_times": frame_times,
         "frames": frame_count,
         "total_triangles": frame_tris,
         "score": score,
