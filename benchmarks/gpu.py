@@ -126,6 +126,7 @@ def _run_max_benchmark(pygame, duration=25):
         })
 
     fps_list = []
+    frame_times = []
     frame_count = 0
     start = time.perf_counter()
     last_time = start
@@ -300,6 +301,7 @@ def _run_max_benchmark(pygame, duration=25):
         now = time.perf_counter()
         if now - last_time > 0:
             fps_list.append(1.0 / (now - last_time))
+            frame_times.append(now - last_time)
         last_time = now
 
         font = pygame.font.SysFont("consolas", 18, bold=True)

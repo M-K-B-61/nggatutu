@@ -136,18 +136,18 @@ def benchmark_aes(iterations=2_000_000):
     try:
         from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
         cipher = Cipher(algorithms.AES(key), modes.ECB())
-        encryptor = cipher.encryptor()
-        decryptor = cipher.decryptor()
 
         start = time.perf_counter()
         for _ in range(iterations):
-            ct = encryptor.update(data)
-            encryptor.reset()
-            pt = decryptor.update(ct)
-            decryptor.reset()
+            encryptor = cipher.encryptor()
+            ct = encryptor.update(data) + encryptor.finalize()
+            decryptor = cipher.decryptor()
+            pt = decryptor.update(ct) + decryptor.finalize()
         elapsed = time.perf_counter() - start
         return iterations / elapsed
     except ImportError:
+        pass
+    except Exception:
         pass
 
     start = time.perf_counter()
