@@ -324,16 +324,22 @@ def launch_gui():
             pen = QPen(color, 14, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
             p.setPen(pen)
             p.drawArc(c.x() - r, c.y() - r, r * 2, r * 2, 225 * 16, int(-270 * prog) * 16)
+
             p.setPen(QColor(255, 255, 255))
-            p.setFont(QFont("Segoe UI", 36, QFont.Weight.Bold))
-            p.drawText(self.rect().adjusted(0, -15, 0, 0), Qt.AlignmentFlag.AlignCenter, str(int(self.score)))
+            p.setFont(QFont("Segoe UI", 32, QFont.Weight.Bold))
+            score_rect = self.rect().adjusted(0, -20, 0, -25)
+            p.drawText(score_rect, Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter, str(int(self.score)))
+
             p.setPen(QColor(150, 150, 150))
-            p.setFont(QFont("Segoe UI", 11))
-            p.drawText(self.rect().adjusted(0, 35, 0, 0), Qt.AlignmentFlag.AlignCenter, self.label)
+            p.setFont(QFont("Segoe UI", 10))
+            label_rect = self.rect().adjusted(0, 30, 0, 5)
+            p.drawText(label_rect, Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter, self.label)
+
             if self.sublabel:
                 p.setPen(QColor(100, 100, 100))
                 p.setFont(QFont("Segoe UI", 9))
-                p.drawText(self.rect().adjusted(0, 55, 0, 0), Qt.AlignmentFlag.AlignCenter, self.sublabel)
+                sub_rect = self.rect().adjusted(0, 48, 0, -5)
+                p.drawText(sub_rect, Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter, self.sublabel)
 
     class BarChart(QWidget):
         def __init__(self, parent=None):
