@@ -198,34 +198,38 @@ def launch_gui():
             self.dots = 0
 
         def show(self):
-            pixmap = QPixmap(600, 350)
+            pixmap = QPixmap(500, 320)
             pixmap.fill(QColor(13, 17, 23))
             painter = QPainter(pixmap)
             painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-            gradient = QLinearGradient(0, 0, 600, 350)
+
+            gradient = QLinearGradient(0, 0, 500, 320)
             gradient.setColorAt(0, QColor(13, 17, 23))
-            gradient.setColorAt(0.5, QColor(22, 27, 34))
+            gradient.setColorAt(0.5, QColor(18, 22, 30))
             gradient.setColorAt(1, QColor(13, 17, 23))
-            painter.fillRect(0, 0, 600, 350, gradient)
-            glow = QLinearGradient(200, 100, 400, 100)
+            painter.fillRect(0, 0, 500, 320, gradient)
+
+            glow = QLinearGradient(150, 80, 350, 80)
             glow.setColorAt(0, QColor(88, 166, 255, 0))
-            glow.setColorAt(0.5, QColor(88, 166, 255, 30))
+            glow.setColorAt(0.5, QColor(88, 166, 255, 25))
             glow.setColorAt(1, QColor(88, 166, 255, 0))
-            painter.fillRect(0, 80, 600, 80, glow)
+            painter.fillRect(0, 60, 500, 100, glow)
+
             painter.setPen(QColor(88, 166, 255))
-            painter.setFont(QFont("Segoe UI", 42, QFont.Weight.Bold))
-            painter.drawText(pixmap.rect().adjusted(0, -50, 0, 0), Qt.AlignmentFlag.AlignCenter, "Ngga Tutu")
+            painter.setFont(QFont("Segoe UI", 40, QFont.Weight.Bold))
+            painter.drawText(pixmap.rect().adjusted(0, -40, 0, 0), Qt.AlignmentFlag.AlignCenter, "Ngga Tutu")
+
             painter.setPen(QColor(139, 148, 158))
-            painter.setFont(QFont("Segoe UI", 13))
-            painter.drawText(pixmap.rect().adjusted(0, 20, 0, 0), Qt.AlignmentFlag.AlignCenter, "Real Performance Benchmark")
-            painter.setPen(QColor(88, 166, 255))
-            painter.setFont(QFont("Segoe UI", 10))
-            painter.drawText(pixmap.rect().adjusted(0, 50, 0, 0), Qt.AlignmentFlag.AlignCenter, f"v{VERSION}")
+            painter.setFont(QFont("Segoe UI", 12))
+            painter.drawText(pixmap.rect().adjusted(0, 20, 0, 0), Qt.AlignmentFlag.AlignCenter, "Performance Benchmark")
+
             painter.setPen(QColor(40, 45, 55))
-            painter.drawRoundedRect(150, 250, 300, 6, 3, 3)
+            painter.drawRoundedRect(125, 220, 250, 4, 2, 2)
+
             painter.setPen(QColor(60, 65, 75))
-            painter.setFont(QFont("Segoe UI", 8))
-            painter.drawText(150, 280, 300, 15, Qt.AlignmentFlag.AlignCenter, "Initializing benchmarks...")
+            painter.setFont(QFont("Segoe UI", 9))
+            painter.drawText(125, 250, 250, 15, Qt.AlignmentFlag.AlignCenter, "Loading...")
+
             painter.end()
             self.splash = QSplashScreen(pixmap)
             self.splash.show()
@@ -234,47 +238,44 @@ def launch_gui():
             if not self.splash:
                 return
             self.progress_value = min(value, 100)
-            pixmap = QPixmap(600, 350)
+            pixmap = QPixmap(500, 320)
             pixmap.fill(QColor(13, 17, 23))
             painter = QPainter(pixmap)
             painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-            gradient = QLinearGradient(0, 0, 600, 350)
+            gradient = QLinearGradient(0, 0, 500, 320)
             gradient.setColorAt(0, QColor(13, 17, 23))
-            gradient.setColorAt(0.5, QColor(22, 27, 34))
+            gradient.setColorAt(0.5, QColor(18, 22, 30))
             gradient.setColorAt(1, QColor(13, 17, 23))
-            painter.fillRect(0, 0, 600, 350, gradient)
-            glow = QLinearGradient(200, 100, 400, 100)
+            painter.fillRect(0, 0, 500, 320, gradient)
+            glow = QLinearGradient(150, 80, 350, 80)
             glow.setColorAt(0, QColor(88, 166, 255, 0))
-            glow.setColorAt(0.5, QColor(88, 166, 255, 30))
+            glow.setColorAt(0.5, QColor(88, 166, 255, 25))
             glow.setColorAt(1, QColor(88, 166, 255, 0))
-            painter.fillRect(0, 80, 600, 80, glow)
+            painter.fillRect(0, 60, 500, 100, glow)
             painter.setPen(QColor(88, 166, 255))
-            painter.setFont(QFont("Segoe UI", 42, QFont.Weight.Bold))
-            painter.drawText(pixmap.rect().adjusted(0, -50, 0, 0), Qt.AlignmentFlag.AlignCenter, "Ngga Tutu")
+            painter.setFont(QFont("Segoe UI", 40, QFont.Weight.Bold))
+            painter.drawText(pixmap.rect().adjusted(0, -40, 0, 0), Qt.AlignmentFlag.AlignCenter, "Ngga Tutu")
             painter.setPen(QColor(139, 148, 158))
-            painter.setFont(QFont("Segoe UI", 13))
-            painter.drawText(pixmap.rect().adjusted(0, 20, 0, 0), Qt.AlignmentFlag.AlignCenter, "Real Performance Benchmark")
-            painter.setPen(QColor(88, 166, 255))
-            painter.setFont(QFont("Segoe UI", 10))
-            painter.drawText(pixmap.rect().adjusted(0, 50, 0, 0), Qt.AlignmentFlag.AlignCenter, f"v{VERSION}")
+            painter.setFont(QFont("Segoe UI", 12))
+            painter.drawText(pixmap.rect().adjusted(0, 20, 0, 0), Qt.AlignmentFlag.AlignCenter, "Performance Benchmark")
             painter.setPen(QColor(40, 45, 55))
-            painter.drawRoundedRect(150, 250, 300, 6, 3, 3)
-            bar_width = int(300 * self.progress_value / 100)
+            painter.drawRoundedRect(125, 220, 250, 4, 2, 2)
+            bar_width = int(250 * self.progress_value / 100)
             if bar_width > 0:
-                bar_grad = QLinearGradient(150, 0, 450, 0)
+                bar_grad = QLinearGradient(125, 0, 375, 0)
                 bar_grad.setColorAt(0, QColor(88, 166, 255))
                 bar_grad.setColorAt(1, QColor(120, 180, 255))
                 painter.setBrush(QBrush(bar_grad))
                 painter.setPen(Qt.PenStyle.NoPen)
-                painter.drawRoundedRect(150, 250, bar_width, 6, 3, 3)
+                painter.drawRoundedRect(125, 220, bar_width, 4, 2, 2)
             self.dots = (self.dots + 1) % 4
             status = "Initializing" if self.progress_value < 30 else "Loading tests" if self.progress_value < 70 else "Ready"
             painter.setPen(QColor(100, 110, 120))
             painter.setFont(QFont("Segoe UI", 9))
-            painter.drawText(150, 280, 300, 15, Qt.AlignmentFlag.AlignCenter, f"{status}{'.' * self.dots}")
+            painter.drawText(125, 250, 250, 15, Qt.AlignmentFlag.AlignCenter, f"{status}{'.' * self.dots}")
             painter.setPen(QColor(139, 148, 158))
             painter.setFont(QFont("Segoe UI", 8))
-            painter.drawText(150, 300, 300, 15, Qt.AlignmentFlag.AlignCenter, f"{self.progress_value}%")
+            painter.drawText(125, 270, 250, 15, Qt.AlignmentFlag.AlignCenter, f"{self.progress_value}%")
             painter.end()
             self.splash.setPixmap(pixmap)
 
@@ -804,12 +805,34 @@ def launch_gui():
 
             self.content_layout.addStretch()
 
+    def _create_app_icon():
+        from PySide6.QtGui import QPixmap, QPainter, QColor, QPen, QBrush, QLinearGradient, QFont
+        from PySide6.QtCore import Qt
+        size = 64
+        pixmap = QPixmap(size, size)
+        pixmap.fill(QColor(0, 0, 0, 0))
+        painter = QPainter(pixmap)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        gradient = QLinearGradient(0, 0, size, size)
+        gradient.setColorAt(0, QColor(88, 166, 255))
+        gradient.setColorAt(1, QColor(30, 60, 120))
+        painter.setBrush(QBrush(gradient))
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.drawRoundedRect(0, 0, size, size, 12, 12)
+        painter.setPen(QColor(255, 255, 255))
+        painter.setFont(QFont("Segoe UI", 24, QFont.Weight.Bold))
+        painter.drawText(pixmap.rect(), Qt.AlignmentFlag.AlignCenter, "N")
+        painter.end()
+        from PySide6.QtGui import QIcon
+        return QIcon(pixmap)
+
     class MainWindow(QMainWindow):
         def __init__(self):
             super().__init__()
-            self.setWindowTitle("Ngga Tutu Benchmark")
+            self.setWindowTitle("Ngga Tutu - Benchmark")
             self.setMinimumSize(1100, 750)
             self.resize(1200, 800)
+            self.setWindowIcon(_create_app_icon())
             self.setup_ui()
 
         def setup_ui(self):
@@ -820,21 +843,37 @@ def launch_gui():
             main_layout.setSpacing(0)
 
             header = QWidget()
-            header.setFixedHeight(60)
+            header.setFixedHeight(56)
             header.setStyleSheet("""
-                QWidget { background: #0d1117; border-bottom: 1px solid #21262d; }
+                QWidget {
+                    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                        stop:0 #0d1117, stop:0.5 #161b22, stop:1 #0d1117);
+                    border-bottom: 1px solid #21262d;
+                }
             """)
             header_layout = QHBoxLayout(header)
-            header_layout.setContentsMargins(25, 0, 25, 0)
+            header_layout.setContentsMargins(24, 0, 24, 0)
+
+            icon_label = QLabel("NGGA")
+            icon_label.setStyleSheet("""
+                color: #58a6ff; font-size: 18px; font-weight: bold;
+                background: #21262d; border-radius: 6px;
+                padding: 6px 10px; margin-right: 12px;
+            """)
+            header_layout.addWidget(icon_label)
+
             title = QLabel("Ngga Tutu")
-            title.setStyleSheet("color: #58a6ff; font-size: 22px; font-weight: bold;")
+            title.setStyleSheet("color: #e6edf3; font-size: 20px; font-weight: bold;")
             header_layout.addWidget(title)
-            subtitle = QLabel("  Real Performance Benchmark")
-            subtitle.setStyleSheet("color: #8b949e; font-size: 12px;")
+
+            subtitle = QLabel("  Benchmark")
+            subtitle.setStyleSheet("color: #58a6ff; font-size: 14px; font-weight: bold;")
             header_layout.addWidget(subtitle)
+
             header_layout.addStretch()
+
             ver = QLabel(f"v{VERSION}")
-            ver.setStyleSheet("color: #484f58; font-size: 11px;")
+            ver.setStyleSheet("color: #484f58; font-size: 11px; font-weight: bold;")
             header_layout.addWidget(ver)
             main_layout.addWidget(header)
 
@@ -847,7 +886,7 @@ def launch_gui():
             main_layout.addWidget(tabs)
 
             status = QLabel("Ready")
-            status.setFixedHeight(28)
+            status.setFixedHeight(26)
             status.setStyleSheet("color: #8b949e; padding: 4px 15px; background: #161b22; border-top: 1px solid #21262d; font-size: 11px;")
             main_layout.addWidget(status)
 
