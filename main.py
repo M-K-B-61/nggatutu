@@ -863,6 +863,7 @@ def launch_gui():
         splash.close()
         window[0] = MainWindow()
         window[0].show()
+        window[0].destroyed.connect(app.quit)
 
     progress = [0]
     progress_timer = QTimer()
