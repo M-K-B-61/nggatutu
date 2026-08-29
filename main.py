@@ -345,12 +345,10 @@ def launch_gui():
         def __init__(self, parent=None):
             super().__init__(parent)
             self.data = {}
-            self.max_val = 1000
             self.setFixedHeight(160)
 
         def set_data(self, data, max_val=1000):
             self.data = data
-            self.max_val = max(max_val, 100)
             self.update()
 
         def paintEvent(self, event):
@@ -362,9 +360,10 @@ def launch_gui():
             n = len(self.data)
             sx = (self.width() - n * bw - (n - 1) * gap) // 2
             colors = [QColor(74, 158, 255), QColor(255, 80, 80), QColor(0, 200, 100), QColor(255, 180, 0)]
+            max_val = max(self.data.values()) if self.data else 1
             for i, (label, val) in enumerate(self.data.items()):
                 x = sx + i * (bw + gap)
-                bh = int((val / self.max_val) * 110)
+                bh = max(8, int((val / max_val) * 110))
                 y = self.height() - 35 - bh
                 grad = QLinearGradient(x, y, x, y + bh)
                 c = colors[i % len(colors)]
