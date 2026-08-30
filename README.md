@@ -17,32 +17,9 @@
 
 **Stress test your PC, measure real performance, get a professional grade.**
 
-[🚀 Web Lite](#-browser-lite-version-web) · [📦 Kurulum](#-kurulum--installation) · [✨ Özellikler](#-özellikler--features) · [📊 Kullanım](#-kullanım--usage) · [🤝 Katkı](#-nasıl-katkı-sağlanır--how-to-contribute)
+[📦 Kurulum](#-kurulum--installation) · [✨ Özellikler](#-özellikler--features) · [📊 Kullanım](#-kullanım--usage) · [🤝 Katkı](#-nasıl-katkı-sağlanır--how-to-contribute)
 
 </div>
-
----
-
-## 🌐 Browser Lite Version (Web)
-
-> 🌍 **Tüm cihazlarda çalışır** — Sadece bir tarayıcı yeterli!
-> 🌍 **Works on all devices** — Just a browser is enough!
-
-| 🖥️ Windows | 🍎 macOS | 📱 Android | 📱 iOS | 🐧 Linux |
-|:---:|:---:|:---:|:---:|:---:|
-| ✅ | ✅ | ✅ | ✅ | ✅ |
-
-**💡 Lite sürümü neler yapar:**
-
-| Test | Açıklama | Gerçek Test |
-|:---:|---|:---:|
-| ⚡ **CPU** | Asal sayılar, matris çarpma, SHA-256 hash, sıralama | ✅ |
-| 🧠 **Memory** | Sıralı/rastgele okuma-yazma, Float64 bant genişliği | ✅ |
-| 🎮 **GPU** | 10K+ shape, piksel işleme, gradyan, WebGL | ✅ |
-| 💾 **Disk** | Blob yazma/okuma, JSON serialize, gzip sıkıştırma | ✅ |
-
-> 📁 Tek dosya: `index.html` — GitHub Pages üzerinden çalışır
-> 🔗 **[Canlı Demo →](https://m-k-b-61.github.io/nggatutu/)**
 
 ---
 
@@ -60,12 +37,6 @@ python main.py
 > 📌 İlk çalıştırmada bağımlılıklar otomatik yüklenir.
 > 📌 Dependencies install automatically on first run.
 
-### 🌐 Browser Lite Sürümü
-
-Hiçbir kurulum gerekmez! `index.html` dosyasını tarayıcınızda açmanız yeterli.
-
-> No installation needed! Just open `index.html` in your browser.
-
 ---
 
 ## ✨ Özellikler / Features
@@ -76,9 +47,10 @@ Hiçbir kurulum gerekmez! `index.html` dosyasını tarayıcınızda açmanız ye
 
 ### ⚡ CPU Benchmark
 - Asal Sayı Testi (5M — Sieve of Eratosthenes)
-- Matris Çarpma (256×256 Float32)
-- SHA-256 Kripto Hash (5000 iterasyon)
-- Dizi Sıralama (2M eleman)
+- Matris Çarpma (1000×1000)
+- SHA-256 Kripto Hash (5M ops)
+- AES Şifreleme
+- Sıkıştırma (zlib)
 - Tek & Çok çekirdek desteği
 
 </td>
@@ -86,9 +58,9 @@ Hiçbir kurulum gerekmez! `index.html` dosyasını tarayıcınızda açmanız ye
 
 ### 🧠 Memory Benchmark
 - Sıralı Okuma/Yazma
-- Rastgele Erişim
-- Float64 Bant Genişliği
+- Rastgele Okuma/Yazma
 - Kopyalama Hızı
+- Bant Genişliği Testi
 - Cache Performansı
 - Gecikme Ölçümü
 
@@ -108,11 +80,11 @@ Hiçbir kurulum gerekmez! `index.html` dosyasını tarayıcınızda açmanız ye
 <td>
 
 ### 🎮 GPU Benchmark
-- 1920×1080 2D Rendering
-- 10,000+ Şekil Çizimi
-- Pikel İşleme (edge detection)
-- WebGL Shader Testi
-- FPS / Frame Time Analizi
+- 1920×1080 3D Rendering
+- Phong Lighting + Shadows
+- 10,000 Partikül
+- FPS / 1% Low / 0.1% Low
+- Frame Time Analizi
 - Gerçek Zamanlı HUD
 
 </td>
@@ -184,7 +156,6 @@ python main.py version
 nggatutu/
 ├── main.py                 # GUI + CLI giriş noktası
 ├── requirements.txt        # Bağımlılıklar
-├── index.html              # 🌐 Browser Lite Benchmark
 ├── README.md
 ├── benchmarks/
 │   ├── __init__.py
@@ -244,7 +215,7 @@ This project is distributed under the [MIT](LICENSE) license.
 
 **⚡ Ngga Tutu** — *Gerçek Performans, Gerçek Puan*
 
-Made with 🐍 Python · 🎨 PySide6 · 🔢 NumPy · 🎮 Pygame · 🌐 HTML5
+Made with 🐍 Python · 🎨 PySide6 · 🔢 NumPy · 🎮 Pygame
 
 [⬆️ Üste Dön / Back to Top](#-ngga-tutu)
 
