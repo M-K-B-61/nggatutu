@@ -9,7 +9,7 @@
 ![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
 ![Platform](https://img.shields.io/badge/Platform-Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white)
 ![Status](https://img.shields.io/badge/Status-Active-brightgreen?style=for-the-badge)
-![Browser](https://img.shields.io/badge/Browser-Lite版-FF6B6B?style=for-the-badge&logo=googlechrome&logoColor=white)
+![Browser](https://img.shields.io/badge/Browser-Lite-FF6B6B?style=for-the-badge&logo=googlechrome&logoColor=white)
 
 <br>
 
